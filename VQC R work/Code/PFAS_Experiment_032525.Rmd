@@ -41,24 +41,26 @@ if (!require("openxlsx")) {install.packages("openxlsx"); require("openxlsx")} # 
 here()
 ```
 
-# Load Data
+#1. Load Data
 
 ## Body Weight
-
 ```{r data3, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
 
 file_path <- here("Data Sheets", "PFAS_VEH_Rdata_BW.xlsx")
 print(file_path)
 
-VEH_BW <- read.xlsx(here("/Users/victoriaqc/Documents/GitHub/PFAS_met_cage/VQC R work/Data Sheets/PFAS_VEH_Rdata_BW.xlsx"))
+PFAS_1mg_BW <- read.xlsx(here("/Users/victoriaqc/Documents/GitHub/PFAS_met_cage/VQC R work/Data Sheets/PFAS_Rdata_1mg_BW.xlsx"))
+PFAS_10mg_BW <- read.xlsx(here("/Users/victoriaqc/Documents/GitHub/PFAS_met_cage/VQC R work/Data Sheets/PFAS_Rdata_10mg_BW.xlsx"))
+
 
 PFAS_meta <- read.xlsx(here("/Users/victoriaqc/Documents/GitHub/PFAS_met_cage/VQC R work/Data Sheets/PFAS_Sample_Meta.xlsx"))
 
 ```
 
+###1mg/kg vs. VEH
 ```{r echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
 
-VEH_BW_plot <- VEH_BW %>%
+PFAS_1mg_BW_plot <- PFAS_1mg_BW %>%
   pivot_longer(
     cols = -X1,
     names_to = "ID",             # Name of the new column for IDs
@@ -67,23 +69,23 @@ VEH_BW_plot <- VEH_BW %>%
 
 PFAS_meta$ID <- as.character(PFAS_meta$ID)
 
-colnames(VEH_BW_plot)
+colnames(PFAS_1mg_BW_plot)
 
-VEH_BW_plot_2 <- VEH_BW_plot %>% left_join(PFAS_meta, by = c("ID" = "ID")) %>%
+PFAS_1mg_BW_plot_2 <- PFAS_1mg_BW_plot %>% left_join(PFAS_meta, by = c("ID" = "ID")) %>%
                         rename(Timepoint = X1)
 
-VEH_BW_plot_2$Timepoint <- factor(VEH_BW_plot_2$Timepoint, levels = c("D-2", "D-1", "D0", "D1"))
-VEH_BW_plot_2$Drug <- factor(VEH_BW_plot_2$Drug, levels = c("Vehicle", "PFAS"))
+PFAS_1mg_BW_plot_2$Timepoint <- factor(PFAS_1mg_BW_plot_2$Timepoint, levels = c("D-2", "D-1", "D0", "D1"))
+PFAS_1mg_BW_plot_2$Drug <- factor(PFAS_1mg_BW_plot_2$Drug, levels = c("Vehicle", "PFAS_1mg"))
 
 
-VEH_BW_plot_3 <- VEH_BW_plot_2 %>%
+PFAS_1mg_BW_plot_3 <- PFAS_1mg_BW_plot_2 %>%
   group_by(ID, Timepoint, Drug) %>%
   summarize(
     Mean = mean(Measurement, na.rm = TRUE),
     SD = sd(Measurement, na.rm = TRUE)/sqrt(5)
 ) 
 
-VEH_BW_plot_4 <- VEH_BW_plot_2 %>%
+PFAS_1mg_BW_plot_4 <- PFAS_1mg_BW_plot_2 %>%
   group_by(Timepoint, Drug) %>%
   summarize(
     Mean = mean(Measurement, na.rm = TRUE),
@@ -91,24 +93,24 @@ VEH_BW_plot_4 <- VEH_BW_plot_2 %>%
 )
 
 
-VEH_BW_plot_5 <- VEH_BW_plot_4 %>%
+PFAS_1mg_BW_plot_5 <- PFAS_1mg_BW_plot_4 %>%
   group_by(Drug) %>%
   mutate(NormalizedMean = Mean / first(Mean)) %>%
   mutate(NormalizedSD = SD / first(Mean))
 
-VEH_BW_plot_5$NormDown <- VEH_BW_plot_5$NormalizedMean - VEH_BW_plot_5$NormalizedSD
-VEH_BW_plot_5$NormUp <- VEH_BW_plot_5$NormalizedMean + VEH_BW_plot_5$NormalizedSD
+PFAS_1mg_BW_plot_5$NormDown <- PFAS_1mg_BW_plot_5$NormalizedMean - PFAS_1mg_BW_plot_5$NormalizedSD
+PFAS_1mg_BW_plot_5$NormUp <- PFAS_1mg_BW_plot_5$NormalizedMean + PFAS_1mg_BW_plot_5$NormalizedSD
 
-VEH_BW_plot_5$Timepoint <- factor(VEH_BW_plot_5$Timepoint, levels = c("D-2", "D-1", "D0", "D1"))
-VEH_BW_plot_5$Drug <- factor(VEH_BW_plot_5$Drug, levels = c("Vehicle", "PFAS"))
+PFAS_1mg_BW_plot_5$Timepoint <- factor(PFAS_1mg_BW_plot_5$Timepoint, levels = c("D-2", "D-1", "D0", "D1"))
+PFAS_1mg_BW_plot_5$Drug <- factor(PFAS_1mg_BW_plot_5$Drug, levels = c("Vehicle", "PFAS_1mg"))
 
 # Example plot
-ggplot(data = VEH_BW_plot_5, aes(x = Timepoint, ymin = NormDown, ymax = NormUp, y = NormalizedMean, color = Drug, group = Drug, fill = Drug)) + 
+ggplot(data = PFAS_1mg_BW_plot_5, aes(x = Timepoint, ymin = NormDown, ymax = NormUp, y = NormalizedMean, color = Drug, group = Drug, fill = Drug)) + 
   # Adding a gray backfill from D1 to D7
-  geom_rect(aes(xmin = "D1" , xmax = "D7", ymin = -Inf, ymax = Inf), fill = "lightgray", alpha = 0.1, color = NA) +
+  geom_rect(aes(xmin = "D-2" , xmax = "D1", ymin = -Inf, ymax = Inf), fill = "lightgray", alpha = 0.1, color = NA) +
   geom_line(size = 1.5) +  # Thicker line for better visibility
   geom_ribbon(aes(ymin = NormDown, ymax = NormUp), alpha = 0.5, color = NA) +  # Ensure ymin and ymax are specified
-  annotate("text", x = "D1", y = .88, label = "PFAS", hjust = 0, vjust = 1, size = 10, color = "black") +  # Adding the text
+  annotate("text", x = "D1", y = .88, label = "PFAS 1mg/kg", hjust = 2, vjust = 0, size = 5, color = "black") +  # Adding the text
   theme_classic() +
   labs(x = "Timepoint", y = "Normalized Mean", title = "Mouse Body Weight Over Study") +
     theme(
@@ -120,18 +122,15 @@ ggplot(data = VEH_BW_plot_5, aes(x = Timepoint, ymin = NormDown, ymax = NormUp, 
   )
 
 
-
-
-
-tidy_df6 <- tidy_df2 %>%
+PFAS_1mg_BW_plot_6 <- PFAS_1mg_BW_plot_2 %>%
   group_by(Drug) %>%
   mutate(Normalized = Measurement / first(Measurement)) %>%
-  filter(Timepoint == "D7")
+  filter(Timepoint == "D1")
 
-tidy_df6$Drug <- factor(tidy_df6$Drug, levels = c("Vehicle", "PFAS"))
+PFAS_1mg_BW_plot_6$Drug <- factor(PFAS_1mg_BW_plot_6$Drug, levels = c("Vehicle", "PFAS_1mg"))
 
 
-ggplot(data = tidy_df6, aes(x = Drug, y = Normalized, color = Drug)) + 
+ggplot(data = PFAS_1mg_BW_plot_6, aes(x = Drug, y = Normalized, color = Drug)) + 
   geom_point(size = 3) +
   theme_classic() +
   labs(x = "Drug", y = "Normalized Measurement", title = "Body Weight at D7 by Drug Normalized to D-2") +
@@ -147,6 +146,94 @@ ggplot(data = tidy_df6, aes(x = Drug, y = Normalized, color = Drug)) +
 
 ```
 
+###10mg/kg vs. VEH
+```{r echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
+
+PFAS_10mg_BW_plot <- PFAS_10mg_BW %>%
+  pivot_longer(
+    cols = -X1,
+    names_to = "ID",             # Name of the new column for IDs
+    values_to = "Measurement"    # Name for the new column containing values
+  ) 
+
+PFAS_meta$ID <- as.character(PFAS_meta$ID)
+
+colnames(PFAS_10mg_BW_plot)
+
+PFAS_10mg_BW_plot_2 <- PFAS_10mg_BW_plot %>% left_join(PFAS_meta, by = c("ID" = "ID")) %>%
+                        rename(Timepoint = X1)
+
+PFAS_10mg_BW_plot_2$Timepoint <- factor(PFAS_10mg_BW_plot_2$Timepoint, levels = c("D-2", "D-1", "D0", "D1"))
+PFAS_10mg_BW_plot_2$Drug <- factor(PFAS_10mg_BW_plot_2$Drug, levels = c("Vehicle", "PFAS_10mg"))
+
+
+PFAS_10mg_BW_plot_3 <- PFAS_10mg_BW_plot_2 %>%
+  group_by(ID, Timepoint, Drug) %>%
+  summarize(
+    Mean = mean(Measurement, na.rm = TRUE),
+    SD = sd(Measurement, na.rm = TRUE)/sqrt(5)
+) 
+
+PFAS_10mg_BW_plot_4 <- PFAS_10mg_BW_plot_2 %>%
+  group_by(Timepoint, Drug) %>%
+  summarize(
+    Mean = mean(Measurement, na.rm = TRUE),
+    SD = sd(Measurement, na.rm = TRUE)/sqrt(5)
+)
+
+
+PFAS_10mg_BW_plot_5 <- PFAS_10mg_BW_plot_4 %>%
+  group_by(Drug) %>%
+  mutate(NormalizedMean = Mean / first(Mean)) %>%
+  mutate(NormalizedSD = SD / first(Mean))
+
+PFAS_10mg_BW_plot_5$NormDown <- PFAS_10mg_BW_plot_5$NormalizedMean - PFAS_10mg_BW_plot_5$NormalizedSD
+PFAS_10mg_BW_plot_5$NormUp <- PFAS_10mg_BW_plot_5$NormalizedMean + PFAS_10mg_BW_plot_5$NormalizedSD
+
+PFAS_10mg_BW_plot_5$Timepoint <- factor(PFAS_10mg_BW_plot_5$Timepoint, levels = c("D-2", "D-1", "D0", "D1"))
+PFAS_10mg_BW_plot_5$Drug <- factor(PFAS_10mg_BW_plot_5$Drug, levels = c("Vehicle", "PFAS_10mg"))
+
+# Example plot
+ggplot(data = PFAS_10mg_BW_plot_5, aes(x = Timepoint, ymin = NormDown, ymax = NormUp, y = NormalizedMean, color = Drug, group = Drug, fill = Drug)) + 
+  # Adding a gray backfill from D1 to D7
+  geom_rect(aes(xmin = "D-2" , xmax = "D1", ymin = -Inf, ymax = Inf), fill = "lightgray", alpha = 0.1, color = NA) +
+  geom_line(size = 1.5) +  # Thicker line for better visibility
+  geom_ribbon(aes(ymin = NormDown, ymax = NormUp), alpha = 0.5, color = NA) +  # Ensure ymin and ymax are specified
+  annotate("text", x = "D1", y = .88, label = "PFAS 10mg/kg", hjust = 2, vjust = 0, size = 5, color = "black") +  # Adding the text
+  theme_classic() +
+  labs(x = "Timepoint", y = "Normalized Mean", title = "Mouse Body Weight Over Study") +
+    theme(
+    axis.title.x = element_text(size = 14),  # Increase x-axis title size
+    axis.title.y = element_text(size = 14),  # Increase y-axis title size
+    axis.text.x = element_text(size = 12),    # Increase x-axis text size
+    axis.text.y = element_text(size = 12),    # Increase y-axis text size
+    plot.title = element_text(size = 16, hjust = 0.5)       # Increase plot title size
+  )
+
+
+PFAS_10mg_BW_plot_6 <- PFAS_10mg_BW_plot_2 %>%
+  group_by(Drug) %>%
+  mutate(Normalized = Measurement / first(Measurement)) %>%
+  filter(Timepoint == "D1")
+
+PFAS_10mg_BW_plot_6$Drug <- factor(PFAS_10mg_BW_plot_6$Drug, levels = c("Vehicle", "PFAS_1mg"))
+
+
+ggplot(data = PFAS_10mg_BW_plot_6, aes(x = Drug, y = Normalized, color = Drug)) + 
+  geom_point(size = 3) +
+  theme_classic() +
+  labs(x = "Drug", y = "Normalized Measurement", title = "Body Weight at D1 by Drug Normalized to D-2") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  # Rotate x-axis labels for better visibility
+    theme(
+    axis.title.x = element_text(size = 14),  # Increase x-axis title size
+    axis.title.y = element_text(size = 14),  # Increase y-axis title size
+    axis.text.x = element_text(size = 12, angle = 0, hjust = .5),    # Increase x-axis text size
+    axis.text.y = element_text(size = 12),    # Increase y-axis text size
+    plot.title = element_text(size = 16, hjust = 0.5)       # Increase plot title size
+  )
+
+
+```
 ## Food
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
