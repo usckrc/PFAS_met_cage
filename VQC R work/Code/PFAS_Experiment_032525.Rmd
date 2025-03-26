@@ -1,8 +1,8 @@
 ---
 title: "Pilot PFAS Metabolic Cage Study"
 subtitle: "7 days at 10mg/kg PFOA and PFOS"
-author: "Jonathan Nelson"
-date: "`r format(Sys.time(), '%d %B, %Y')`"
+author: "Victoria Quon-Chow"
+date: "032526"
 output:
   html_document:
     toc: yes
@@ -47,7 +47,12 @@ here()
 
 ```{r data3, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
 
-df.BW <- read.xlsx(here("PFAS_Rdata.xlsx"))
+file_path <- here("Data Sheets", "PFAS_VEH_Rdata_BW.xlsx")
+print(file_path)
+
+VEH_BW <- read.xlsx(here("/Users/victoriaqc/Documents/GitHub/PFAS_met_cage/VQC R work/Data Sheets/PFAS_VEH_Rdata_BW.xlsx"))
+
+VEH_BW <- read.xlsx(here("PFAS_VEH_Rdata_BW.xlsx"))
 
 df.meta <- read.xlsx(here("PFAS sample meta.xlsx"))
 
@@ -55,17 +60,16 @@ df.meta <- read.xlsx(here("PFAS sample meta.xlsx"))
 
 ```{r echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
 
-tidy_df <- df.BW %>%
+VEH_BW_plot <- VEH_BW %>%
   pivot_longer(
     cols = -X1,
     names_to = "ID",             # Name of the new column for IDs
     values_to = "Measurement"    # Name for the new column containing values
   ) 
 
+VEH_BW_plot$ID <- as.character(VEH_BW_plot$ID)
 
-df.meta$ID <- as.character(df.meta$ID)
-
-tidy_df2 <- tidy_df %>% left_join(df.meta, by = c("ID" = "ID")) %>%
+VEH_BW_plot_2 <- VEH_BW_plot %>% left_join(VEH_BW_plot, by = c("ID" = "ID")) %>%
                         rename(Timepoint = X1)
 
 tidy_df2$Timepoint <- factor(tidy_df2$Timepoint, levels = c("D-2", "D-1", "D0", "D1", "D2", "D3", "D4", "D5", "D6", "D7"))
