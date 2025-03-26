@@ -52,9 +52,7 @@ print(file_path)
 
 VEH_BW <- read.xlsx(here("/Users/victoriaqc/Documents/GitHub/PFAS_met_cage/VQC R work/Data Sheets/PFAS_VEH_Rdata_BW.xlsx"))
 
-VEH_BW <- read.xlsx(here("PFAS_VEH_Rdata_BW.xlsx"))
-
-df.meta <- read.xlsx(here("PFAS sample meta.xlsx"))
+PFAS_meta <- read.xlsx(here("/Users/victoriaqc/Documents/GitHub/PFAS_met_cage/VQC R work/Data Sheets/PFAS_Sample_Meta.xlsx"))
 
 ```
 
@@ -67,23 +65,25 @@ VEH_BW_plot <- VEH_BW %>%
     values_to = "Measurement"    # Name for the new column containing values
   ) 
 
-VEH_BW_plot$ID <- as.character(VEH_BW_plot$ID)
+PFAS_meta$ID <- as.character(PFAS_meta$ID)
 
-VEH_BW_plot_2 <- VEH_BW_plot %>% left_join(VEH_BW_plot, by = c("ID" = "ID")) %>%
+colnames(VEH_BW_plot)
+
+VEH_BW_plot_2 <- VEH_BW_plot %>% left_join(PFAS_meta, by = c("ID" = "ID")) %>%
                         rename(Timepoint = X1)
 
-tidy_df2$Timepoint <- factor(tidy_df2$Timepoint, levels = c("D-2", "D-1", "D0", "D1", "D2", "D3", "D4", "D5", "D6", "D7"))
-tidy_df2$Drug <- factor(tidy_df2$Drug, levels = c("Vehicle", "PFAS"))
+VEH_BW_plot_2$Timepoint <- factor(VEH_BW_plot_2$Timepoint, levels = c("D-2", "D-1", "D0", "D1"))
+VEH_BW_plot_2$Drug <- factor(VEH_BW_plot_2$Drug, levels = c("Vehicle", "PFAS"))
 
 
-tidy_df3 <- tidy_df2 %>%
+VEH_BW_plot_3 <- VEH_BW_plot_2 %>%
   group_by(ID, Timepoint, Drug) %>%
   summarize(
     Mean = mean(Measurement, na.rm = TRUE),
     SD = sd(Measurement, na.rm = TRUE)/sqrt(5)
 ) 
 
-tidy_df4 <- tidy_df2 %>%
+VEH_BW_plot_4 <- VEH_BW_plot_2 %>%
   group_by(Timepoint, Drug) %>%
   summarize(
     Mean = mean(Measurement, na.rm = TRUE),
@@ -91,19 +91,19 @@ tidy_df4 <- tidy_df2 %>%
 )
 
 
-tidy_df5 <- tidy_df4 %>%
+VEH_BW_plot_5 <- VEH_BW_plot_4 %>%
   group_by(Drug) %>%
   mutate(NormalizedMean = Mean / first(Mean)) %>%
   mutate(NormalizedSD = SD / first(Mean))
 
-tidy_df5$NormDown <- tidy_df5$NormalizedMean - tidy_df5$NormalizedSD
-tidy_df5$NormUp <- tidy_df5$NormalizedMean + tidy_df5$NormalizedSD
+VEH_BW_plot_5$NormDown <- VEH_BW_plot_5$NormalizedMean - VEH_BW_plot_5$NormalizedSD
+VEH_BW_plot_5$NormUp <- VEH_BW_plot_5$NormalizedMean + VEH_BW_plot_5$NormalizedSD
 
-tidy_df5$Timepoint <- factor(tidy_df5$Timepoint, levels = c("D-2", "D-1", "D0", "D1", "D2", "D3", "D4", "D5", "D6", "D7"))
-tidy_df5$Drug <- factor(tidy_df5$Drug, levels = c("Vehicle", "PFAS"))
+VEH_BW_plot_5$Timepoint <- factor(VEH_BW_plot_5$Timepoint, levels = c("D-2", "D-1", "D0", "D1"))
+VEH_BW_plot_5$Drug <- factor(VEH_BW_plot_5$Drug, levels = c("Vehicle", "PFAS"))
 
 # Example plot
-ggplot(data = tidy_df5, aes(x = Timepoint, ymin = NormDown, ymax = NormUp, y = NormalizedMean, color = Drug, group = Drug, fill = Drug)) + 
+ggplot(data = VEH_BW_plot_5, aes(x = Timepoint, ymin = NormDown, ymax = NormUp, y = NormalizedMean, color = Drug, group = Drug, fill = Drug)) + 
   # Adding a gray backfill from D1 to D7
   geom_rect(aes(xmin = "D1" , xmax = "D7", ymin = -Inf, ymax = Inf), fill = "lightgray", alpha = 0.1, color = NA) +
   geom_line(size = 1.5) +  # Thicker line for better visibility
