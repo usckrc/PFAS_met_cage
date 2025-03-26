@@ -41,9 +41,7 @@ if (!require("openxlsx")) {install.packages("openxlsx"); require("openxlsx")} # 
 here()
 ```
 
-#1. Load Data
-
-## Body Weight
+# Load Data
 ```{r data3, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
 
 file_path <- here("Data Sheets", "PFAS_VEH_Rdata_BW.xlsx")
@@ -56,6 +54,9 @@ PFAS_10mg_BW <- read.xlsx(here("/Users/victoriaqc/Documents/GitHub/PFAS_met_cage
 PFAS_meta <- read.xlsx(here("/Users/victoriaqc/Documents/GitHub/PFAS_met_cage/VQC R work/Data Sheets/PFAS_Sample_Meta.xlsx"))
 
 ```
+
+
+##1. Body Weight
 
 ###1mg/kg vs. VEH
 ```{r echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
@@ -234,11 +235,11 @@ ggplot(data = PFAS_10mg_BW_plot_6, aes(x = Drug, y = Normalized, color = Drug)) 
 
 
 ```
-## Food
+##2. Food
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
 
-df.BW <- read.xlsx(here("PFAS_Rdata_FoodWeight.xlsx"))
+PFAS_food <- read.xlsx(here("PFAS_Rdata_FoodWeight.xlsx"))
 
 df.meta <- read.xlsx(here("PFAS sample meta.xlsx"))
 
