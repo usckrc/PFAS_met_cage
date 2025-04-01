@@ -44,14 +44,11 @@ here()
 # Load Data
 ```{r data3, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
 
-file_path <- here("Data Sheets", "PFAS_VEH_Rdata_BW.xlsx")
-print(file_path)
-
-PFAS_1mg_BW <- read.xlsx(here("/Users/victoriaqc/Documents/GitHub/PFAS_met_cage/VQC R work/Data Sheets/PFAS_Rdata_1mg_BW.xlsx"))
-PFAS_10mg_BW <- read.xlsx(here("/Users/victoriaqc/Documents/GitHub/PFAS_met_cage/VQC R work/Data Sheets/PFAS_Rdata_10mg_BW.xlsx"))
+PFAS_1mg_BW <- read.xlsx(here("VQC R work", "Data Sheets", "PFAS_Rdata_1mg_BW.xlsx"))
+PFAS_10mg_BW <- read.xlsx(here("VQC R work", "Data Sheets", "PFAS_Rdata_10mg_BW.xlsx"))
 
 
-PFAS_meta <- read.xlsx(here("/Users/victoriaqc/Documents/GitHub/PFAS_met_cage/VQC R work/Data Sheets/PFAS_Sample_Meta.xlsx"))
+PFAS_meta <- read.xlsx(here("VQC R work", "Data Sheets", "PFAS_Sample_Meta.xlsx"))
 
 ```
 
