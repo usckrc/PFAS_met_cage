@@ -105,7 +105,7 @@ PFAS_1mg_BW_plot_5$Drug <- factor(PFAS_1mg_BW_plot_5$Drug, levels = c("Vehicle",
 # Example plot
 ggplot(data = PFAS_1mg_BW_plot_5, aes(x = Timepoint, ymin = NormDown, ymax = NormUp, y = NormalizedMean, color = Drug, group = Drug, fill = Drug)) + 
   # Adding a gray backfill from D1 to D7
-  geom_rect(aes(xmin = "D-2" , xmax = "D1", ymin = -Inf, ymax = Inf), fill = "lightgray", alpha = 0.1, color = NA) +
+  geom_rect(aes(xmin = "D0" , xmax = "D1", ymin = -Inf, ymax = Inf), fill = "lightgray", alpha = 0.1, color = NA) +
   geom_line(size = 1.5) +  # Thicker line for better visibility
   geom_ribbon(aes(ymin = NormDown, ymax = NormUp), alpha = 0.5, color = NA) +  # Ensure ymin and ymax are specified
   annotate("text", x = "D1", y = .88, label = "PFAS 1mg/kg", hjust = 2, vjust = 0, size = 5, color = "black") +  # Adding the text
@@ -194,7 +194,7 @@ PFAS_10mg_BW_plot_5$Drug <- factor(PFAS_10mg_BW_plot_5$Drug, levels = c("Vehicle
 # Example plot
 ggplot(data = PFAS_10mg_BW_plot_5, aes(x = Timepoint, ymin = NormDown, ymax = NormUp, y = NormalizedMean, color = Drug, group = Drug, fill = Drug)) + 
   # Adding a gray backfill from D1 to D7
-  geom_rect(aes(xmin = "D-2" , xmax = "D1", ymin = -Inf, ymax = Inf), fill = "lightgray", alpha = 0.1, color = NA) +
+  geom_rect(aes(xmin = "D0" , xmax = "D1", ymin = -Inf, ymax = Inf), fill = "lightgray", alpha = 0.1, color = NA) +
   geom_line(size = 1.5) +  # Thicker line for better visibility
   geom_ribbon(aes(ymin = NormDown, ymax = NormUp), alpha = 0.5, color = NA) +  # Ensure ymin and ymax are specified
   annotate("text", x = "D1", y = .88, label = "PFAS 10mg/kg", hjust = 2, vjust = 0, size = 5, color = "black") +  # Adding the text
