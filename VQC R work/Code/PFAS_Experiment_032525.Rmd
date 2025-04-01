@@ -255,7 +255,7 @@ PFAS_BW_plot_2 <- PFAS_BW_plot %>% left_join(PFAS_meta, by = c("ID" = "ID")) %>%
                         rename(Timepoint = X1)
 
 PFAS_BW_plot_2$Timepoint <- factor(PFAS_BW_plot_2$Timepoint, levels = c("D-2", "D-1", "D0", "D1","D7"))
-PFAS_BW_plot_2$Drug <- factor(PFAS_BW_plot_2$Drug, levels = c("Vehicle", "PFAS_1mg", "PFAS_10mg")
+PFAS_BW_plot_2$Drug <- factor(PFAS_BW_plot_2$Drug, levels = c("Vehicle", "PFAS_1mg", "PFAS_10mg"))
 
 
 PFAS_BW_plot_3 <- PFAS_BW_plot_2 %>%
