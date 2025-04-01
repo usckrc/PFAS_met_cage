@@ -232,6 +232,102 @@ ggplot(data = PFAS_10mg_BW_plot_6, aes(x = Drug, y = Normalized, color = Drug)) 
 
 
 ```
+
+#Combine 1mg/kg + 10mg/kg
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
+
+#Load Data
+PFAS_BW <- read.xlsx(here("VQC R work", "Data Sheets", "PFAS_Rdata_BW.xlsx"))
+PFAS_meta <- read.xlsx(here("VQC R work", "Data Sheets", "PFAS_Sample_Meta.xlsx"))
+
+PFAS_BW_plot <- PFAS_BW %>%
+  pivot_longer(
+    cols = -X1,
+    names_to = "ID",             # Name of the new column for IDs
+    values_to = "Measurement"    # Name for the new column containing values
+  ) 
+
+PFAS_meta$ID <- as.character(PFAS_meta$ID)
+
+colnames(PFAS_BW_plot)
+
+PFAS_BW_plot_2 <- PFAS_BW_plot %>% left_join(PFAS_meta, by = c("ID" = "ID")) %>%
+                        rename(Timepoint = X1)
+
+PFAS_BW_plot_2$Timepoint <- factor(PFAS_BW_plot_2$Timepoint, levels = c("D-2", "D-1", "D0", "D1","D7"))
+PFAS_BW_plot_2$Drug <- factor(PFAS_BW_plot_2$Drug, levels = c("Vehicle", "PFAS_1mg", "PFAS_10mg")
+
+
+PFAS_BW_plot_3 <- PFAS_BW_plot_2 %>%
+  group_by(ID, Timepoint, Drug) %>%
+  summarize(
+    Mean = mean(Measurement, na.rm = TRUE),
+    SD = sd(Measurement, na.rm = TRUE)/sqrt(5)
+) 
+
+PFAS_BW_plot_4 <- PFAS_BW_plot_2 %>%
+  group_by(Timepoint, Drug) %>%
+  summarize(
+    Mean = mean(Measurement, na.rm = TRUE),
+    SD = sd(Measurement, na.rm = TRUE)/sqrt(5)
+)
+
+
+PFAS_BW_plot_5 <- PFAS_BW_plot_4 %>%
+  group_by(Drug) %>%
+  mutate(NormalizedMean = Mean / first(Mean)) %>%
+  mutate(NormalizedSD = SD / first(Mean))
+
+PFAS_BW_plot_5$NormDown <- PFAS_BW_plot_5$NormalizedMean - PFAS_BW_plot_5$NormalizedSD
+PFAS_BW_plot_5$NormUp <- PFAS_BW_plot_5$NormalizedMean + PFAS_BW_plot_5$NormalizedSD
+
+PFAS_BW_plot_5$Timepoint <- factor(PFAS_BW_plot_5$Timepoint, levels = c("D-2", "D-1", "D0", "D1", "D7"))
+PFAS_BW_plot_5$Drug <- factor(PFAS_BW_plot_5$Drug, levels = c("Vehicle", "PFAS_1mg", "PFAS_10mg"))
+
+# Example plot
+ggplot(data = PFAS_BW_plot_5, aes(x = Timepoint, ymin = NormDown, ymax = NormUp, y = NormalizedMean, color = Drug, group = Drug, fill = Drug)) + 
+  # Adding a gray backfill from D1 to D7
+  geom_rect(aes(xmin = "D0" , xmax = "D7", ymin = -Inf, ymax = Inf), fill = "lightgray", alpha = 0.1, color = NA) +
+  geom_line(size = 1.5) +  # Thicker line for better visibility
+  geom_ribbon(aes(ymin = NormDown, ymax = NormUp), alpha = 0.5, color = NA) +  # Ensure ymin and ymax are specified
+  annotate("text", x = "D7", y = .88, label = "PFAS 1mg/kg", hjust = 2, vjust = 0, size = 5, color = "black") +  # Adding the text
+  theme_classic() +
+  labs(x = "Timepoint", y = "Normalized Mean", title = "Mouse Body Weight Over Study") +
+    theme(
+    axis.title.x = element_text(size = 14),  # Increase x-axis title size
+    axis.title.y = element_text(size = 14),  # Increase y-axis title size
+    axis.text.x = element_text(size = 12),    # Increase x-axis text size
+    axis.text.y = element_text(size = 12),    # Increase y-axis text size
+    plot.title = element_text(size = 16, hjust = 0.5)       # Increase plot title size
+  )
+
+
+PFAS_BW_plot_6 <- PFAS_BW_plot_2 %>%
+  group_by(Drug) %>%
+  mutate(Normalized = Measurement / first(Measurement)) %>%
+  filter(Timepoint == "D1")
+
+PFAS_BW_plot_6$Drug <- factor(PFAS_BW_plot_6$Drug, levels = c("Vehicle", "PFAS_1mg", "PFAS_10mg"))
+
+
+ggplot(data = PFAS_BW_plot_6, aes(x = Drug, y = Normalized, color = Drug)) + 
+  geom_point(size = 3) +
+  theme_classic() +
+  labs(x = "Drug", y = "Normalized Measurement", title = "Body Weight at D7 by Drug Normalized to D-2") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  # Rotate x-axis labels for better visibility
+    theme(
+    axis.title.x = element_text(size = 14),  # Increase x-axis title size
+    axis.title.y = element_text(size = 14),  # Increase y-axis title size
+    axis.text.x = element_text(size = 12, angle = 0, hjust = .5),    # Increase x-axis text size
+    axis.text.y = element_text(size = 12),    # Increase y-axis text size
+    plot.title = element_text(size = 16, hjust = 0.5)       # Increase plot title size
+  )
+
+
+
+```
+
+
 ##2. Food
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
