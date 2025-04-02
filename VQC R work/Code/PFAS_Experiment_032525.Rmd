@@ -41,21 +41,8 @@ if (!require("openxlsx")) {install.packages("openxlsx"); require("openxlsx")} # 
 here()
 ```
 
-# Load Data
-```{r data3, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
 
-PFAS_1mg_BW <- read.xlsx(here("VQC R work", "Data Sheets", "PFAS_Rdata_1mg_BW.xlsx"))
-PFAS_10mg_BW <- read.xlsx(here("VQC R work", "Data Sheets", "PFAS_Rdata_10mg_BW.xlsx"))
-
-
-PFAS_meta <- read.xlsx(here("VQC R work", "Data Sheets", "PFAS_Sample_Meta.xlsx"))
-
-```
-
-
-##1. Body Weight
-
-### 1mg/kg vs. 10mg/kg vs. VEH
+#1. Body Weight
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
 
 #Load Data
@@ -76,8 +63,9 @@ colnames(PFAS_BW_plot)
 PFAS_BW_plot_2 <- PFAS_BW_plot %>% left_join(PFAS_meta, by = c("ID" = "ID")) %>%
                         rename(Timepoint = X1)
 
-PFAS_BW_plot_2$Timepoint <- factor(PFAS_BW_plot_2$Timepoint, levels = c("D-2", "D-1", "D0", "D1","D7"))
+PFAS_BW_plot_2$Timepoint <- factor(PFAS_BW_plot_2$Timepoint, levels = c("3/20/25", "3/21/25", "3/25/25", "3/26/25", "4/1/25", "4/2/25"))
 PFAS_BW_plot_2$Drug <- factor(PFAS_BW_plot_2$Drug, levels = c("Vehicle", "PFAS_1mg", "PFAS_10mg"))
+
 
 
 PFAS_BW_plot_3 <- PFAS_BW_plot_2 %>%
@@ -144,7 +132,6 @@ ggplot(data = PFAS_BW_plot_5, aes(x = Drug, y = Normalized, color = Drug)) +
 
 
 ##2. Food
-
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
 #Load Data
 PFAS_food <- read.xlsx(here("VQC R work", "Data Sheets","PFAS_Rdata_Food.xlsx"))
@@ -321,7 +308,7 @@ ggplot(data = tidy_df6, aes(x = Drug, y = Normalized, color = Drug)) +
 
 
 
-## Urine Volume
+##3. Urine Volume
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
 
