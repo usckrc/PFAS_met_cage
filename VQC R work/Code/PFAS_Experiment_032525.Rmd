@@ -63,9 +63,9 @@ colnames(PFAS_BW_plot)
 PFAS_BW_plot_2 <- PFAS_BW_plot %>% left_join(PFAS_meta, by = c("ID" = "ID")) %>%
                         rename(Timepoint = X1)
 
-PFAS_BW_plot_2$Timepoint <- factor(PFAS_BW_plot_2$Timepoint, levels = c("3/20/25", "3/21/25", "3/25/25", "3/26/25", "4/1/25", "4/2/25"))
-PFAS_BW_plot_2$Drug <- factor(PFAS_BW_plot_2$Drug, levels = c("Vehicle", "PFAS_1mg", "PFAS_10mg"))
+PFAS_BW_plot_2$Timepoint <- factor(PFAS_BW_plot_2$Timepoint, levels = c("45736", "45737", "45741", "45742", "45748", "45749"))
 
+PFAS_BW_plot_2$Drug <- factor(PFAS_BW_plot_2$Drug, levels = c("Vehicle", "PFAS_1mg", "PFAS_10mg"))
 
 
 PFAS_BW_plot_3 <- PFAS_BW_plot_2 %>%
@@ -84,16 +84,16 @@ PFAS_BW_plot_4 <- PFAS_BW_plot_3 %>%
 PFAS_BW_plot_4$NormDown <- PFAS_BW_plot_4$NormalizedMean - PFAS_BW_plot_4$NormalizedSD
 PFAS_BW_plot_4$NormUp <- PFAS_BW_plot_4$NormalizedMean + PFAS_BW_plot_4$NormalizedSD
 
-PFAS_BW_plot_4$Timepoint <- factor(PFAS_BW_plot_4$Timepoint, levels = c("D-2", "D-1", "D0", "D1", "D7"))
+PFAS_BW_plot_4$Timepoint <- factor(PFAS_BW_plot_4$Timepoint, levels = c("45736", "45737", "45741", "45742", "45748", "45749"))
 PFAS_BW_plot_4$Drug <- factor(PFAS_BW_plot_4$Drug, levels = c("Vehicle", "PFAS_1mg", "PFAS_10mg"))
 
 # Example plot
 ggplot(data = PFAS_BW_plot_4, aes(x = Timepoint, ymin = NormDown, ymax = NormUp, y = NormalizedMean, color = Drug, group = Drug, fill = Drug)) + 
   # Adding a gray backfill from D1 to D7
-  geom_rect(aes(xmin = "D0" , xmax = "D7", ymin = -Inf, ymax = Inf), fill = "lightgray", alpha = 0.1, color = NA) +
+  geom_rect(aes(xmin = "45741" , xmax = "45749", ymin = -Inf, ymax = Inf), fill = "lightgray", alpha = 0.1, color = NA) +
   geom_line(size = 1.5) +  # Thicker line for better visibility
   geom_ribbon(aes(ymin = NormDown, ymax = NormUp), alpha = 0.5, color = NA) +  # Ensure ymin and ymax are specified
-  annotate("text", x = "D7", y = .88, label = "PFAS Concentration", hjust = 1.5, vjust = 0, size = 5, color = "black") +  # Adding the text
+  annotate("text", x = "45741", y = .88, label = "PFAS Concentration", hjust = 0.5, vjust = 0, size = 5, color = "black") +  # Adding the text
   theme_classic() +
   labs(x = "Timepoint", y = "Normalized Mean", title = "Mouse Body Weight Over Study") +
     theme(
@@ -108,7 +108,7 @@ ggplot(data = PFAS_BW_plot_4, aes(x = Timepoint, ymin = NormDown, ymax = NormUp,
 PFAS_BW_plot_5 <- PFAS_BW_plot_2 %>%
   group_by(Drug) %>%
   mutate(Normalized = Measurement / first(Measurement)) %>%
-  filter(Timepoint == "D7")
+  filter(Timepoint == "45749")
 
 PFAS_BW_plot_5$Drug <- factor(PFAS_BW_plot_5$Drug, levels = c("Vehicle", "PFAS_1mg", "PFAS_10mg"))
 
