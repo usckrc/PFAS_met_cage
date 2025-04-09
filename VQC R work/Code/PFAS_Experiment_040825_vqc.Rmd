@@ -84,78 +84,27 @@ PFAS_BW_plot_4$NormUp <- PFAS_BW_plot_4$NormalizedMean + PFAS_BW_plot_4$Normaliz
 
 PFAS_BW_plot_4$Drug <- factor(PFAS_BW_plot_4$Drug, levels = c("Vehicle", "PFAS_1mg", "PFAS_10mg"))
 
-max_date <- max(PFAS_BW_plot_4$Timepoint, na.rm = TRUE)
+max_date_BW <- max(PFAS_BW_plot_4$Timepoint, na.rm = TRUE)
 
 # Example plot
-ggplot(data = PFAS_BW_plot_4, aes(
-  x = Timepoint, 
-  y = NormalizedMean, 
-  ymin = NormDown, 
-  ymax = NormUp, 
-  color = Drug, 
-  group = Drug, 
-  fill = Drug
-)) + 
-  
-  # Add a gray shaded background from D1 to D7
-  geom_rect(
-    aes(
-      xmin = as.Date("2025-03-25"), 
-      xmax = max_date, 
-      ymin = -Inf, 
-      ymax = Inf
-    ), 
-    fill = "lightgray", alpha = 0.1, color = NA
-  ) +
-
-  # Plot the main trend line
-  geom_line(size = 1.5) +  
-
-  # Add shaded error region (confidence ribbon)
-  geom_ribbon(aes(ymin = NormDown, ymax = NormUp), alpha = 0.5, color = NA) +  
-
-  # Add an annotation for PFAS start date
-  annotate(
-    "text", 
-    x = as.Date("2025-03-25"), 
-    y = 0.88, 
-    label = "Start PFAS", 
-    hjust = 0, vjust = 0, 
-    size = 5, color = "black"
-  ) +  
-
-  # Adjust x-axis to show more date labels
-  scale_x_date(
-    breaks = seq(min(PFAS_BW_plot_4$Timepoint, na.rm = TRUE), 
-                 max_date, 
-                 by = "2 days"),  # Adjust interval as needed
-    date_labels = "%b %d"  # Format as "Mar 25"
-  ) +
-
-  # Apply a clean theme
+ggplot(data = PFAS_BW_plot_4, aes(x = Timepoint, y = NormalizedMean, ymin = NormDown, ymax = NormUp, color = Drug, group = Drug, fill = Drug)) + 
+  geom_rect(aes(xmin = as.Date("2025-03-25"), xmax = max_date_BW, ymin = -Inf, ymax = Inf), fill = "lightgray", alpha = 0.1, color = NA) +
+  geom_line(size = 1.5) + 
+  geom_ribbon(aes(ymin = NormDown, ymax = NormUp), alpha = 0.5, color = NA) +
+  annotate("text", x = as.Date("2025-03-25"), y = 0.88, label = "Start PFAS", hjust = 0, vjust = 0, size = 5, color = "black") +
+  scale_x_date(breaks = seq(min(PFAS_BW_plot_4$Timepoint, na.rm = TRUE), max_date, by = "2 days"), date_labels = "%b %d") +
   theme_classic() +
+  labs(x = "Timepoint", y = "Normalized Mean", title = "Mouse Body Weight Over Study") +
+  theme(axis.title = element_text(size = 14), axis.text = element_text(size = 12), 
+        axis.text.x = element_text(angle = 45, hjust = 1), plot.title = element_text(size = 16, hjust = 0.5))
 
-  # Customize labels
-  labs(
-    x = "Timepoint", 
-    y = "Normalized Mean", 
-    title = "Mouse Body Weight Over Study"
-  ) +
 
-  # Adjust theme elements for better readability
-  theme(
-    axis.title.x = element_text(size = 14),  
-    axis.title.y = element_text(size = 14),  
-    axis.text.x  = element_text(size = 12, angle = 45, hjust = 1),  # Rotate x-axis labels
-    axis.text.y  = element_text(size = 12),    
-    plot.title   = element_text(size = 16, hjust = 0.5)       
-  )
 
 
 PFAS_BW_plot_5 <- PFAS_BW_plot_2 %>%
   group_by(ID) %>%
   mutate(Normalized = Measurement / first(Measurement)) %>%
-  filter(Timepoint == max_date)
+  filter(Timepoint == max_date_BW)
 
 PFAS_BW_plot_5$Drug <- factor(PFAS_BW_plot_5$Drug, levels = c("Vehicle", "PFAS_1mg", "PFAS_10mg"))
 
@@ -265,7 +214,7 @@ ggplot(data = PFAS_food_plot_5, aes(x = Drug, y = Normalized, color = Drug)) +
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
 #Load Data
-PFAS_UrineVolume <- read.xlsx(here("VQC R work", "Data Sheets","PFAS_Rdata_UrineVolume.xlsx"))
+PFAS_UrineVolume <- read.xlsx(here("VQC R work", "Data Sheets","PFAS_Rdata_UrineVolume.xlsx"),detectDates = TRUE)
 PFAS_meta <- read.xlsx(here("VQC R work", "Data Sheets", "PFAS_Sample_Meta.xlsx"))
 
 ```
@@ -286,7 +235,6 @@ PFAS_meta$ID <- as.character(PFAS_meta$ID)
 PFAS_UrineVolume_2 <- PFAS_UrineVolume_1 %>% left_join(PFAS_meta, by = c("ID" = "ID")) %>%
                         rename(Timepoint = X1)
 
-PFAS_UrineVolume_2$Timepoint <- factor(PFAS_UrineVolume_2$Timepoint, levels = c("45737", "45742", "45749"))
 PFAS_UrineVolume_2$Drug <- factor(PFAS_UrineVolume_2$Drug, levels = c("Vehicle", "PFAS_1mg", "PFAS_10mg"))
 
 
@@ -305,29 +253,27 @@ PFAS_UrineVolume_4 <- PFAS_UrineVolume_3 %>%
 PFAS_UrineVolume_4$NormDown <- PFAS_UrineVolume_4$NormalizedMean - PFAS_UrineVolume_4$NormalizedSD
 PFAS_UrineVolume_4$NormUp <- PFAS_UrineVolume_4$NormalizedMean + PFAS_UrineVolume_4$NormalizedSD
 
-# Example plot
-ggplot(data = PFAS_UrineVolume_4, aes(x = Timepoint, ymin = NormDown, ymax = NormUp, y = NormalizedMean, color = Drug, group = Drug, fill = Drug)) + 
-  # Adding a gray backfill from D1 to D7
-  geom_rect(aes(xmin = "45742" , xmax = "45749", ymin = -Inf, ymax = Inf), fill = "lightgray", alpha = 0.1, color = NA) +
-  geom_line(size = 1.5) +  # Thicker line for better visibility
-  geom_ribbon(aes(ymin = NormDown, ymax = NormUp), alpha = 0.5, color = NA) +  # Ensure ymin and ymax are specified
-  annotate("text", x = "45742", y = .65, label = "PFAS", hjust = 0.5, vjust = -0.5, size = 10, color = "black") +  # Adding the text
-  theme_classic() +
-  labs(x = "Timepoint", y = "Normalized Mean", title = "Urine Volume Over Study") +
-    theme(
-    axis.title.x = element_text(size = 14),  # Increase x-axis title size
-    axis.title.y = element_text(size = 14),  # Increase y-axis title size
-    axis.text.x = element_text(size = 12),    # Increase x-axis text size
-    axis.text.y = element_text(size = 12),    # Increase y-axis text size
-    plot.title = element_text(size = 16, hjust = 0.5)       # Increase plot title size
-  )
+max_date_UrineVolume <- max(PFAS_UrineVolume_4$Timepoint, na.rm = TRUE)
 
-PFAS_UrineVolume_6 <- PFAS_UrineVolume_2 %>%
+# Graph Plot
+ggplot(data = PFAS_UrineVolume_4, aes(x = Timepoint, y = NormalizedMean, ymin = NormDown, ymax = NormUp, color = Drug, group = Drug, fill = Drug)) + 
+  geom_rect(aes(xmin = as.Date("2025-03-26"), xmax = max_date_UrineVolume, ymin = -Inf, ymax = Inf), fill = "lightgray", alpha = 0.1, color = NA) +
+  geom_line(size = 1.5) + 
+  geom_ribbon(aes(ymin = NormDown, ymax = NormUp), alpha = 0.5, color = NA) + 
+  annotate("text", x = as.Date("2025-03-21"), y = 0.88, label = "Start PFAS", hjust = 0, vjust = 0, size = 5, color = "black") +
+  scale_x_date(breaks = seq(min(PFAS_UrineVolume_4$Timepoint, na.rm = TRUE), max_date_UrineVolume, by = "2 days"), date_labels = "%b %d") +
+  theme_classic() +
+  labs(x = "Timepoint", y = "Normalized Mean", title = "Mouse Urine Volume Over Study") +
+  theme(axis.title = element_text(size = 14), axis.text = element_text(size = 12), 
+        axis.text.x = element_text(angle = 45, hjust = 1), plot.title = element_text(size = 16, hjust = 0.5))
+
+
+PFAS_UrineVolume_5 <- PFAS_UrineVolume_2 %>%
   group_by(Drug) %>%
   mutate(Normalized = Measurement / first(Measurement)) %>%
-  filter(Timepoint == "45749")
+  filter(Timepoint == max_date_UrineVolume)
 
-PFAS_UrineVolume_6$Drug <- factor(PFAS_UrineVolume_6$Drug, levels = c("Vehicle", "PFAS_1mg", "PFAS_10mg"))
+PFAS_UrineVolume_5$Drug <- factor(PFAS_UrineVolume_5$Drug, levels = c("Vehicle", "PFAS_1mg", "PFAS_10mg"))
 
 
 ggplot(data = PFAS_UrineVolume_6, aes(x = Drug, y = Normalized, color = Drug)) + 
