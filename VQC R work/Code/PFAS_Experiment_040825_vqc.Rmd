@@ -92,7 +92,7 @@ ggplot(data = PFAS_BW_plot_4, aes(x = Timepoint, y = NormalizedMean, ymin = Norm
   geom_line(size = 1.5) + 
   geom_ribbon(aes(ymin = NormDown, ymax = NormUp), alpha = 0.5, color = NA) +
   annotate("text", x = as.Date("2025-03-25"), y = 0.88, label = "Start PFAS", hjust = 0, vjust = 0, size = 5, color = "black") +
-  scale_x_date(breaks = seq(min(PFAS_BW_plot_4$Timepoint, na.rm = TRUE), max_date, by = "2 days"), date_labels = "%b %d") +
+  scale_x_date(breaks = seq(min(PFAS_BW_plot_4$Timepoint, na.rm = TRUE), max_date_BW, by = "2 days"), date_labels = "%b %d") +
   theme_classic() +
   labs(x = "Timepoint", y = "Normalized Mean", title = "Mouse Body Weight Over Study") +
   theme(axis.title = element_text(size = 14), axis.text = element_text(size = 12), 
@@ -146,7 +146,7 @@ PFAS_meta$ID <- as.character(PFAS_meta$ID)
 PFAS_food_plot_2 <- PFAS_food_plot %>% left_join(PFAS_meta, by = c("ID" = "ID")) %>%
                         rename(Timepoint = X1)
 
-PFAS_food_plot_2$Timepoint <- factor(PFAS_food_plot_2$Timepoint, levels = c("W-1", "W0", "W1"))
+PFAS_food_plot_2$Timepoint <- factor(PFAS_food_plot_2$Timepoint, levels = c("W-1", "W0", "W1", "W2"))
 PFAS_food_plot_2$Drug <- factor(PFAS_food_plot_2$Drug, levels = c("Vehicle", "PFAS_1mg", "PFAS_10mg"))
 
 PFAS_food_plot_3 <- PFAS_food_plot_2 %>%
@@ -164,16 +164,16 @@ PFAS_food_plot_4 <- PFAS_food_plot_3 %>%
 PFAS_food_plot_4$NormDown <- PFAS_food_plot_4$NormalizedMean - PFAS_food_plot_4$NormalizedSD
 PFAS_food_plot_4$NormUp <- PFAS_food_plot_4$NormalizedMean + PFAS_food_plot_4$NormalizedSD
 
-PFAS_food_plot_4$Timepoint <- factor(PFAS_food_plot_4$Timepoint, levels = c("W-1", "W0", "W1"))
+PFAS_food_plot_4$Timepoint <- factor(PFAS_food_plot_4$Timepoint, levels = c("W-1", "W0", "W1", "W2"))
 PFAS_food_plot_4$Drug <- factor(PFAS_food_plot_4$Drug, levels = c("Vehicle", "PFAS_1mg", "PFAS_10mg"))
 
 # Example plot
 ggplot(data = PFAS_food_plot_4, aes(x = Timepoint, ymin = NormDown, ymax = NormUp, y = NormalizedMean, color = Drug, group = Drug, fill = Drug)) + 
   # Adding a gray backfill from D1 to D7
-  geom_rect(aes(xmin = "W0" , xmax = "W1", ymin = -Inf, ymax = Inf), fill = "lightgray", alpha = 0.1, color = NA) +
+  geom_rect(aes(xmin = "W0" , xmax = "W2", ymin = -Inf, ymax = Inf), fill = "lightgray", alpha = 0.1, color = NA) +
   geom_line(size = 1.5) +  # Thicker line for better visibility
   geom_ribbon(aes(ymin = NormDown, ymax = NormUp), alpha = 0.5, color = NA) +  # Ensure ymin and ymax are specified
-  annotate("text", x = "W1", y = .88, label = "PFAS Concentration", hjust = 1.5, vjust = 1, size = 5, color = "black") +  # Adding the text
+  annotate("text", x = "W2", y = .88, label = "PFAS Concentration", hjust = 1.5, vjust = 1, size = 5, color = "black") +  # Adding the text
   theme_classic() +
   labs(x = "Timepoint", y = "Normalized Mean", title = "Food Consumption Over Study") +
     theme(
@@ -188,7 +188,7 @@ ggplot(data = PFAS_food_plot_4, aes(x = Timepoint, ymin = NormDown, ymax = NormU
 PFAS_food_plot_5 <- PFAS_food_plot_2 %>%
   group_by(Drug) %>%
   mutate(Normalized = Measurement / first(Measurement)) %>%
-  filter(Timepoint == "W1")
+  filter(Timepoint == "W2")
 
 PFAS_food_plot_5$Drug <- factor(PFAS_food_plot_5$Drug, levels = c("Vehicle", "PFAS_1mg", "PFAS_10mg"))
 
@@ -196,7 +196,7 @@ PFAS_food_plot_5$Drug <- factor(PFAS_food_plot_5$Drug, levels = c("Vehicle", "PF
 ggplot(data = PFAS_food_plot_5, aes(x = Drug, y = Normalized, color = Drug)) + 
   geom_point(size = 3) +
   theme_classic() +
-  labs(x = "Drug", y = "Normalized Measurement", title = "Food Consumption at D7 by Drug Normalized to W-1") +
+  labs(x = "Drug", y = "Normalized Measurement", title = "Food Consumption by Drug Normalized to W-1") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  # Rotate x-axis labels for better visibility
     theme(
     axis.title.x = element_text(size = 14),  # Increase x-axis title size
@@ -276,10 +276,10 @@ PFAS_UrineVolume_5 <- PFAS_UrineVolume_2 %>%
 PFAS_UrineVolume_5$Drug <- factor(PFAS_UrineVolume_5$Drug, levels = c("Vehicle", "PFAS_1mg", "PFAS_10mg"))
 
 
-ggplot(data = PFAS_UrineVolume_6, aes(x = Drug, y = Normalized, color = Drug)) + 
+ggplot(data = PFAS_UrineVolume_5, aes(x = Drug, y = Normalized, color = Drug)) + 
   geom_point(size = 3) +
   theme_classic() +
-  labs(x = "Drug", y = "Normalized Measurement", title = "Urine Volume at D7 by Drug Normalized to D-1") +
+  labs(x = "Drug", y = "Normalized Measurement", title = "Urine Volume Drug Normalized to D-1") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  # Rotate x-axis labels for better visibility
     theme(
     axis.title.x = element_text(size = 14),  # Increase x-axis title size
