@@ -37,6 +37,7 @@ if (!require("grDevices")) {install.packages("grDevices"); require("grDevices")}
 if (!require("tidyverse")) {install.packages("tidyverse"); require("tidyverse")} # for data frame transformation
 if (!require("tibble")) {install.packages("tibble"); require("tibble")} # for table transformation
 if (!require("openxlsx")) {install.packages("openxlsx"); require("openxlsx")} # for table transformation
+library(grid)
 
 here()
 ```
@@ -89,6 +90,18 @@ max_date_BW <- max(PFAS_BW_plot_4$Timepoint, na.rm = TRUE)
 # Example plot
 ggplot(data = PFAS_BW_plot_4, aes(x = Timepoint, y = NormalizedMean, ymin = NormDown, ymax = NormUp, color = Drug, group = Drug, fill = Drug)) + 
   geom_rect(aes(xmin = as.Date("2025-03-25"), xmax = max_date_BW, ymin = -Inf, ymax = Inf), fill = "lightgray", alpha = 0.1, color = NA) +
+  annotation_custom(grob = textGrob("Week -1", gp = gpar(fontsize = 10, fontface = "italic", col = "darkred")), 
+                    xmin = as.Date("2025-03-20") + 0.5, xmax = as.Date("2025-03-21") - 0.5, 
+                    ymin = 0.78, ymax = 0.78) +
+  annotation_custom(grob = textGrob("Week 0", gp = gpar(fontsize = 10, fontface = "italic", col = "darkred")),
+                    xmin = as.Date("2025-03-25") + 0.5, xmax = as.Date("2025-03-26") + 0.5,
+                    ymin = 0.78, ymax = 0.78) +
+  annotation_custom(grob = textGrob("Week 1", gp = gpar(fontsize = 10, fontface = "italic", col = "darkred")),
+                    xmin = as.Date("2025-04-01") + 0.5, xmax = as.Date("2025-04-02") + 0.5,
+                    ymin = 0.78, ymax = 0.78) +
+  annotation_custom(grob = textGrob("Week 2", gp = gpar(fontsize = 10, fontface = "italic", col = "darkred")),
+                    xmin = as.Date("2025-04-08") + 0.5, xmax = as.Date("2025-04-09") + 0.5,
+                    ymin = 0.78, ymax = 0.78) +
   geom_line(size = 1.5) + 
   geom_ribbon(aes(ymin = NormDown, ymax = NormUp), alpha = 0.5, color = NA) +
   annotate("text", x = as.Date("2025-03-25"), y = 0.88, label = "Start PFAS", hjust = 0, vjust = 0, size = 5, color = "black") +
@@ -99,8 +112,7 @@ ggplot(data = PFAS_BW_plot_4, aes(x = Timepoint, y = NormalizedMean, ymin = Norm
         axis.text.x = element_text(angle = 45, hjust = 1), plot.title = element_text(size = 16, hjust = 0.5))
 
 
-
-
+#Normalized Data
 PFAS_BW_plot_5 <- PFAS_BW_plot_2 %>%
   group_by(ID) %>%
   mutate(Normalized = Measurement / first(Measurement)) %>%
@@ -133,7 +145,7 @@ ggplot(data = PFAS_BW_plot_5, aes(x = Drug, y = Normalized, color = Drug)) +
 PFAS_food <- read.xlsx(here("VQC R work", "Data Sheets","PFAS_Rdata_Food.xlsx"))
 PFAS_meta <- read.xlsx(here("VQC R work", "Data Sheets", "PFAS_Sample_Meta.xlsx"))
 
-#Create Graphs
+
 PFAS_food_plot <- PFAS_food %>%
   pivot_longer(
     cols = -X1,
@@ -184,7 +196,7 @@ ggplot(data = PFAS_food_plot_4, aes(x = Timepoint, ymin = NormDown, ymax = NormU
     plot.title = element_text(size = 16, hjust = 0.5)       # Increase plot title size
   )
 
-
+#Normalized Data
 PFAS_food_plot_5 <- PFAS_food_plot_2 %>%
   group_by(Drug) %>%
   mutate(Normalized = Measurement / first(Measurement)) %>%
@@ -258,16 +270,28 @@ max_date_UrineVolume <- max(PFAS_UrineVolume_4$Timepoint, na.rm = TRUE)
 # Graph Plot
 ggplot(data = PFAS_UrineVolume_4, aes(x = Timepoint, y = NormalizedMean, ymin = NormDown, ymax = NormUp, color = Drug, group = Drug, fill = Drug)) + 
   geom_rect(aes(xmin = as.Date("2025-03-26"), xmax = max_date_UrineVolume, ymin = -Inf, ymax = Inf), fill = "lightgray", alpha = 0.1, color = NA) +
+  annotation_custom(grob = textGrob("Week -1", gp = gpar(fontsize = 10, fontface = "italic", col = "darkred")),
+                    xmin = as.Date("2025-03-21") + 0.5, xmax = as.Date("2025-03-21") - 0.5, 
+                    ymin = 0.78, ymax = 0.78) +
+  annotation_custom(grob = textGrob("Week 0", gp = gpar(fontsize = 10, fontface = "italic", col = "darkred")),
+                    xmin = as.Date("2025-03-26") + 0.5, xmax = as.Date("2025-03-26") + 0.5,
+                    ymin = 0.78, ymax = 0.78) +
+  annotation_custom(grob = textGrob("Week 1", gp = gpar(fontsize = 10, fontface = "italic", col = "darkred")),
+                    xmin = as.Date("2025-04-02") + 0.5, xmax = as.Date("2025-04-02") + 0.5,
+                    ymin = 0.78, ymax = 0.78) +
+  annotation_custom(grob = textGrob("Week 2", gp = gpar(fontsize = 10, fontface = "italic", col = "darkred")),
+                    xmin = as.Date("2025-04-09") + 0.5, xmax = as.Date("2025-04-09") + 0.5,
+                    ymin = 0.78, ymax = 0.78) +
   geom_line(size = 1.5) + 
   geom_ribbon(aes(ymin = NormDown, ymax = NormUp), alpha = 0.5, color = NA) + 
   annotate("text", x = as.Date("2025-03-21"), y = 0.88, label = "Start PFAS", hjust = 0, vjust = 0, size = 5, color = "black") +
-  scale_x_date(breaks = seq(min(PFAS_UrineVolume_4$Timepoint, na.rm = TRUE), max_date_UrineVolume, by = "2 days"), date_labels = "%b %d") +
+  scale_x_date(breaks = seq(min(PFAS_UrineVolume_4$Timepoint, na.rm = TRUE), max_date_UrineVolume, by = "1 days"), date_labels = "%b %d") +
   theme_classic() +
   labs(x = "Timepoint", y = "Normalized Mean", title = "Mouse Urine Volume Over Study") +
   theme(axis.title = element_text(size = 14), axis.text = element_text(size = 12), 
         axis.text.x = element_text(angle = 45, hjust = 1), plot.title = element_text(size = 16, hjust = 0.5))
 
-
+#Normalized Data
 PFAS_UrineVolume_5 <- PFAS_UrineVolume_2 %>%
   group_by(Drug) %>%
   mutate(Normalized = Measurement / first(Measurement)) %>%
