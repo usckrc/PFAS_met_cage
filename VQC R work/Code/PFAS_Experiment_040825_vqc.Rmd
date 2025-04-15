@@ -90,6 +90,7 @@ max_date_BW <- max(PFAS_BW_plot_4$Timepoint, na.rm = TRUE)
 # Example plot
 ggplot(data = PFAS_BW_plot_4, aes(x = Timepoint, y = NormalizedMean, ymin = NormDown, ymax = NormUp, color = Drug, group = Drug, fill = Drug)) + 
   geom_rect(aes(xmin = as.Date("2025-03-25"), xmax = max_date_BW, ymin = -Inf, ymax = Inf), fill = "lightgray", alpha = 0.1, color = NA) +
+  geom_rect(aes(xmin = as.Date("2025-04-09"), xmax = max_date_BW, ymin = -Inf, ymax = .75), fill = "blue", alpha = 0.1, color = NA) +
   annotation_custom(grob = textGrob("Week -1", gp = gpar(fontsize = 10, fontface = "italic", col = "darkred")), 
                     xmin = as.Date("2025-03-20") + 0.5, xmax = as.Date("2025-03-21") - 0.5, 
                     ymin = 0.78, ymax = 0.78) +
