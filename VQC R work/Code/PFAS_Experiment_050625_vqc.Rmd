@@ -144,8 +144,6 @@ ggplot(data = PFAS_BW_plot_5, aes(x = Drug, y = Normalized, color = Drug)) +
     plot.title = element_text(size = 16, hjust = 0.5)       # Increase plot title size
   )
 
-
-
 ```
 
 
@@ -232,9 +230,7 @@ ggplot(data = PFAS_food_plot_5, aes(x = Drug, y = Normalized, color = Drug)) +
 ```
 
 
-
 #3. Urine Volume
-
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
 #Load Data
 PFAS_UrineVolume <- read.xlsx(here("VQC R work", "Data Sheets","PFAS_Rdata_UrineVolume.xlsx"),detectDates = TRUE)
@@ -332,6 +328,8 @@ ggplot(data = PFAS_UrineVolume_5, aes(x = Drug, y = Normalized, color = Drug)) +
 
 
 ```
+
+
 #4. Water Consumption
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
 #Load Data
@@ -414,8 +412,9 @@ ggplot(data = PFAS_food_plot_5, aes(x = Drug, y = Normalized, color = Drug)) +
   )
 
 ```
-#5. Tissue Measurements
 
+
+#5. Tissue Measurements
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
 #Load Data
 PFAS_Tissue <- read.xlsx(here("VQC R work", "Data Sheets","PFAS_Rdata_Tissue.xlsx"))
@@ -458,8 +457,6 @@ ggplot(data = PFAS_Tissue_2, aes(x = Drug, y = HW_BW, color = Drug)) +
     plot.title = element_text(size = 16, hjust = 0.5)       # Increase plot title size
   )
 
-
-
 ```
 
 ```{r echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
@@ -490,12 +487,9 @@ ggplot(data = PFAS_Tissue_2, aes(x = Drug, y = HW_BW, fill = Drug)) +
   )
     
 
-
-
 ```
 
 #6. BUN
-
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
 
 PFAS_BUN <- read.xlsx(here("VQC R work", "Data Sheets","PFAS_Rdata_BUN.xlsx"))
@@ -529,21 +523,19 @@ test <- split(PFAS_BUN_2$BUN.x, PFAS_BUN_2$Drug)
 
 test
 
-ttest <- t.test(test$Vehicle, test$PFAS, var.equal = TRUE)
-ttest2 <- t.test(test$PFAS_1mg, test$PFAS, var.equal = TRUE)
-ttest3 <- t.test(test$PFAS_10mg, test$PFAS, var.equal = TRUE)
+ttest <- t.test(test$Vehicle, test$PFAS_1mg, var.equal = TRUE)
+ttest2 <- t.test(test$Vehicle, test$PFAS_10mg, var.equal = TRUE)
 
 ttest
 ttest2 
-ttest3
 
 ttest_summary <- data.frame(
-  Test = c("PFAS vs Vehicle", "PFAS_1mg vs PFAS", "PFAS_10mg vs PFAS"),
-  t_statistic = c(ttest$statistic, ttest2$statistic, ttest3$statistic),
-  p_value = c(ttest$p.value, ttest2$p.value, ttest3$p.value),
-  conf_low = c(ttest$conf.int[1], ttest2$conf.int[1], ttest3$conf.int[1]),
-  conf_high = c(ttest$conf.int[2], ttest2$conf.int[2], ttest3$conf.int[2]),
-  df = c(ttest$parameter, ttest2$parameter, ttest3$parameter)
+  Test = c("PFAS_1mg vs Vehicle", "PFAS_10mg vs Vehicle"),
+  t_statistic = c(ttest$statistic, ttest2$statistic),
+  p_value = c(ttest$p.value, ttest2$p.value),
+  conf_low = c(ttest$conf.int[1], ttest2$conf.int[1]),
+  conf_high = c(ttest$conf.int[2], ttest2$conf.int[2]),
+  df = c(ttest$parameter, ttest2$parameter)
 )
 
 ```
@@ -592,8 +584,6 @@ ttest
 ```
 
 ### D7 KIM1 (normalized to 24h Urine Volume)
-
-
 ```{r echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
 
 tidy_df2b <- tidy_df2 %>% mutate(KIM1_norm = KIM1 * D6_UV)
