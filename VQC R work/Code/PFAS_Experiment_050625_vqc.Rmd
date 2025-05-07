@@ -2,7 +2,7 @@
 title: "Pilot PFAS Metabolic Cage Study"
 subtitle: "1 month at 1 mg/kg and 10mg/kg PFOA and PFOS"
 author: "Victoria Quon-Chow"
-date: "042925"
+date: "050625"
 output:
   html_document:
     toc: yes
@@ -49,7 +49,9 @@ here()
 #Load Data
 PFAS_BW <- read.xlsx(here("VQC R work", "Data Sheets", "PFAS_Rdata_BW.xlsx"), detectDates = TRUE)
 PFAS_meta <- read.xlsx(here("VQC R work", "Data Sheets", "PFAS_Sample_Meta.xlsx"))
+```
 
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
 PFAS_BW_plot <- PFAS_BW %>%
   pivot_longer(
     cols = -X1,
@@ -152,8 +154,9 @@ ggplot(data = PFAS_BW_plot_5, aes(x = Drug, y = Normalized, color = Drug)) +
 #Load Data
 PFAS_food <- read.xlsx(here("VQC R work", "Data Sheets","PFAS_Rdata_Food.xlsx"))
 PFAS_meta <- read.xlsx(here("VQC R work", "Data Sheets", "PFAS_Sample_Meta.xlsx"))
+```
 
-
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
 PFAS_food_plot <- PFAS_food %>%
   pivot_longer(
     cols = -X1,
@@ -335,7 +338,9 @@ ggplot(data = PFAS_UrineVolume_5, aes(x = Drug, y = Normalized, color = Drug)) +
 PFAS_food <- read.xlsx(here("VQC R work", "Data Sheets","PFAS_Rdata_Water.xlsx"))
 PFAS_meta <- read.xlsx(here("VQC R work", "Data Sheets", "PFAS_Sample_Meta.xlsx"))
 
+```
 
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
 PFAS_water_plot <- PFAS_food %>%
   pivot_longer(
     cols = -X1,
@@ -409,29 +414,28 @@ ggplot(data = PFAS_food_plot_5, aes(x = Drug, y = Normalized, color = Drug)) +
   )
 
 ```
-## Tissue Measurements
+#5. Tissue Measurements
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
-
-df.BW <- read.xlsx(here("PFAS_Rdata_tissue.xlsx"))
-
-df.meta <- read.xlsx(here("PFAS sample meta.xlsx"))
+#Load Data
+PFAS_Tissue <- read.xlsx(here("VQC R work", "Data Sheets","PFAS_Rdata_Tissue.xlsx"))
+PFAS_meta <- read.xlsx(here("VQC R work", "Data Sheets", "PFAS_Sample_Meta.xlsx"))
 
 ```
 
 ```{r echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
 
-df.meta$ID <- as.character(df.meta$ID)
-df.BW$ID <- as.character(df.BW$ID)
+PFAS_meta$ID <- as.character(PFAS_meta$ID)
+PFAS_Tissue$ID <- as.character(PFAS_Tissue$ID)
 
-tidy_df2 <- df.BW %>% left_join(df.meta, by = c("ID" = "ID")) 
+PFAS_Tissue_2 <- PFAS_Tissue %>% left_join(PFAS_meta, by = c("ID" = "ID")) 
 
-tidy_df2$Drug <- factor(tidy_df2$Drug, levels = c("Vehicle", "PFAS"))
+PFAS_Tissue_2$Drug <- factor(PFAS_Tissue_2$Drug, levels = c("Vehicle", "PFAS_1mg", "PFAS_10mg"))
 
-ggplot(data = tidy_df2, aes(x = Drug, y = KW_BW, color = Drug)) + 
+ggplot(data = PFAS_Tissue_2, aes(x = Drug, y = KW_BW, color = Drug)) + 
   geom_point(size = 3) +
   theme_classic() +
-  labs(x = "Drug", y = "KW/BW (mg/g)", title = "Kidney Weight to Body Weight (D7) Ratio") +
+  labs(x = "Drug", y = "KW/BW (mg/g)", title = "Kidney Weight to Body Weight Ratio") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  # Rotate x-axis labels for better visibility
     theme(
     axis.title.x = element_text(size = 14),  # Increase x-axis title size
@@ -441,10 +445,10 @@ ggplot(data = tidy_df2, aes(x = Drug, y = KW_BW, color = Drug)) +
     plot.title = element_text(size = 16, hjust = 0.5)       # Increase plot title size
   )
 
-ggplot(data = tidy_df2, aes(x = Drug, y = HW_BW, color = Drug)) + 
+ggplot(data = PFAS_Tissue_2, aes(x = Drug, y = HW_BW, color = Drug)) + 
   geom_point(size = 3) +
   theme_classic() +
-  labs(x = "Drug", y = "HW/BW (mg/g)", title = "Heart Weight to Body Weight (D7) Ratio") +
+  labs(x = "Drug", y = "HW/BW (mg/g)", title = "Heart Weight to Body Weight Ratio") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  # Rotate x-axis labels for better visibility
     theme(
     axis.title.x = element_text(size = 14),  # Increase x-axis title size
@@ -453,6 +457,38 @@ ggplot(data = tidy_df2, aes(x = Drug, y = HW_BW, color = Drug)) +
     axis.text.y = element_text(size = 12),    # Increase y-axis text size
     plot.title = element_text(size = 16, hjust = 0.5)       # Increase plot title size
   )
+
+
+
+```
+
+```{r echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
+
+ggplot(data = PFAS_Tissue_2, aes(x = Drug, y = KW_BW, fill = Drug)) + 
+  geom_bar(stat = "summary", fun = mean, width = 0.7) + 
+  theme_classic() + 
+  labs(x = "Drug", y = "KW/BW (mg/g)", title = "Kidney Weight to Body Weight Ratio") + 
+  theme(
+    axis.text.x = element_text(size = 12, angle = 45, hjust = 1),
+    axis.text.y = element_text(size = 12),
+    axis.title.x = element_text(size = 14),
+    axis.title.y = element_text(size = 14),
+    plot.title = element_text(size = 16, hjust = 0.5)
+  )
+
+
+ggplot(data = PFAS_Tissue_2, aes(x = Drug, y = HW_BW, fill = Drug)) + 
+  geom_bar(stat = "summary", fun = mean, width = 0.7) + 
+  theme_classic() + 
+  labs(x = "Drug", y = "HW/BW (mg/g)", title = "Heart Weight to Body Weight Ratio") + 
+  theme(
+    axis.text.x = element_text(size = 12, angle = 45, hjust = 1),
+    axis.text.y = element_text(size = 12),
+    axis.title.x = element_text(size = 14),
+    axis.title.y = element_text(size = 14),
+    plot.title = element_text(size = 16, hjust = 0.5)
+  )
+    
 
 
 
