@@ -494,29 +494,28 @@ ggplot(data = PFAS_Tissue_2, aes(x = Drug, y = HW_BW, fill = Drug)) +
 
 ```
 
-## D7 BUN
+#6. BUN
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
 
-df.BUN <- read.xlsx(here("PFAS_Rdata_BUN.xlsx"))
-
-df.meta <- read.xlsx(here("PFAS sample meta.xlsx"))
+PFAS_BUN <- read.xlsx(here("VQC R work", "Data Sheets","PFAS_Rdata_BUN.xlsx"))
+PFAS_meta <- read.xlsx(here("VQC R work", "Data Sheets", "PFAS_Sample_Meta.xlsx"))
 
 ```
 
 ```{r echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
 
-df.meta$ID <- as.character(df.meta$ID)
-df.BUN$ID <- as.character(df.BUN$ID)
+PFAS_meta$ID <- as.character(PFAS_meta$ID)
+PFAS_BUN$ID <- as.character(PFAS_BUN$ID)
 
-tidy_df2 <- df.BUN %>% left_join(df.meta, by = c("ID" = "ID")) 
+PFAS_BUN_2 <- PFAS_BUN %>% left_join(PFAS_meta, by = c("ID" = "ID")) 
 
-tidy_df2$Drug <- factor(tidy_df2$Drug, levels = c("Vehicle", "PFAS"))
+PFAS_BUN_2$Drug <- factor(PFAS_BUN_2$Drug, levels = c("Vehicle", "PFAS_1mg", "PFAS_10mg"))
 
-ggplot(data = tidy_df2, aes(x = Drug, y = BUN, color = Drug)) + 
+ggplot(data = PFAS_BUN_2, aes(x = Drug, y = BUN.x, color = Drug)) + 
   geom_point(size = 3) +
   theme_classic() +
-  labs(x = "Drug", y = "BUN (mg/dL)", title = "BUN levels on D7 ") +
+  labs(x = "Drug", y = "BUN (mg/dL)", title = "BUN levels") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  # Rotate x-axis labels for better visibility
     theme(
     axis.title.x = element_text(size = 14),  # Increase x-axis title size
@@ -526,17 +525,30 @@ ggplot(data = tidy_df2, aes(x = Drug, y = BUN, color = Drug)) +
     plot.title = element_text(size = 16, hjust = 0.5)       # Increase plot title size
   )
 
-test <- split(tidy_df2$BUN, tidy_df2$Drug)
+test <- split(PFAS_BUN_2$BUN.x, PFAS_BUN_2$Drug)
 
 test
 
 ttest <- t.test(test$Vehicle, test$PFAS, var.equal = TRUE)
+ttest2 <- t.test(test$PFAS_1mg, test$PFAS, var.equal = TRUE)
+ttest3 <- t.test(test$PFAS_10mg, test$PFAS, var.equal = TRUE)
 
 ttest
+ttest2 
+ttest3
+
+ttest_summary <- data.frame(
+  Test = c("PFAS vs Vehicle", "PFAS_1mg vs PFAS", "PFAS_10mg vs PFAS"),
+  t_statistic = c(ttest$statistic, ttest2$statistic, ttest3$statistic),
+  p_value = c(ttest$p.value, ttest2$p.value, ttest3$p.value),
+  conf_low = c(ttest$conf.int[1], ttest2$conf.int[1], ttest3$conf.int[1]),
+  conf_high = c(ttest$conf.int[2], ttest2$conf.int[2], ttest3$conf.int[2]),
+  df = c(ttest$parameter, ttest2$parameter, ttest3$parameter)
+)
 
 ```
 
-## D7 KIM1
+### D7 KIM1
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
 
