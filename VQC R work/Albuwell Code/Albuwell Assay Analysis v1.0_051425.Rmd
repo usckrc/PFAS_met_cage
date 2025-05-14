@@ -334,7 +334,7 @@ ggplot(tidy_data_solved_dil_meta2, aes(x = factor(`Timepoint Cre`, levels = c("B
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
-df_creatinine <- read.xlsx(here("Dataset (241028)", "241112_Creatinine_NK.xlsx"))
+df_creatinine <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Creatinine051425.xlsx))
 
 subset_pre <- df_creatinine[19:26, 2:10]
 
