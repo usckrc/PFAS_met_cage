@@ -100,10 +100,10 @@ tidy <- subset %>%
 
 # Load Sample Info
 
-df.Sample <- read.xlsx(here("Dataset (241122)", "241121 Albuwell Sample Info.xlsx"))
+dilution_sample <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Long_PFAS_Albuwell_Sample_051325.xlsx"), detectDates = TRUE)
 
-tidy_data <- tidy_df %>%
-  left_join(df.Sample, by = c("Cell" = "Cell")) 
+tidy_data <- tidy %>%
+  left_join(dilution_sample, by = c("Cell" = "Cell")) 
 
 ```
 
