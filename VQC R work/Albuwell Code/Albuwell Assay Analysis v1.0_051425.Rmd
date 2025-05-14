@@ -334,12 +334,12 @@ ggplot(tidy_data_solved_dil_meta2, aes(x = factor(`Timepoint Cre`, levels = c("B
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
-df_creatinine <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Creatinine051425.xlsx))
+df_creatinine <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Creatinine051425.xlsx"))
 
-subset_pre <- df_creatinine[19:26, 2:10]
+subset_pre <- df_creatinine[7:63, 1:2]
 
 # rename the columns to 1-12
-colnames(subset_pre) <- c("Row", 1:8)
+colnames(subset_pre) <- c("Row", 1:1)
 
 subset_pre <- subset_pre %>%
   mutate(across(-Row, as.numeric))
