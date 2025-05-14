@@ -545,7 +545,7 @@ ttest_summary <- data.frame(
 ggplot(data = PFAS_meta, aes(x = Drug, y = Na, color = Drug)) + 
   geom_point(size = 3) +
   theme_classic() +
-  labs(x = "Drug", y = "Na+ (mg/dL)", title = "Na+ levels") +
+  labs(x = "Drug", y = "Na+ (mmol/L)", title = "Na+ levels") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  # Rotate x-axis labels for better visibility
     theme(
     axis.title.x = element_text(size = 14),  # Increase x-axis title size
@@ -567,7 +567,7 @@ summary(anova_Na)
 ggplot(data = PFAS_meta, aes(x = Drug, y = K, color = Drug)) + 
   geom_point(size = 3) +
   theme_classic() +
-  labs(x = "Drug", y = "K+ (mg/dL)", title = "Na+ levels") +
+  labs(x = "Drug", y = "K+ (mmol/L)", title = "K+ levels") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  # Rotate x-axis labels for better visibility
     theme(
     axis.title.x = element_text(size = 14),  # Increase x-axis title size
@@ -589,7 +589,7 @@ summary(anova_K)
 ggplot(data = PFAS_meta, aes(x = Drug, y = Cl, color = Drug)) + 
   geom_point(size = 3) +
   theme_classic() +
-  labs(x = "Drug", y = "Cl- (mg/dL)", title = "Cl- levels") +
+  labs(x = "Drug", y = "Cl- (mmol/L)", title = "Cl- levels") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  # Rotate x-axis labels for better visibility
     theme(
     axis.title.x = element_text(size = 14),  # Increase x-axis title size
@@ -603,6 +603,114 @@ test <- split(PFAS_meta$Cl, PFAS_meta$Drug)
 
 anova_Cl <- aov(PFAS_meta$Cl ~ PFAS_meta$Drug, data = test)
 summary(anova_Cl)
+
+```
+
+#10. iCa
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
+ggplot(data = PFAS_meta, aes(x = Drug, y = iCa, color = Drug)) + 
+  geom_point(size = 3) +
+  theme_classic() +
+  labs(x = "Drug", y = "iCa (mmol/L)", title = "iCa levels") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  # Rotate x-axis labels for better visibility
+    theme(
+    axis.title.x = element_text(size = 14),  # Increase x-axis title size
+    axis.title.y = element_text(size = 14),  # Increase y-axis title size
+    axis.text.x = element_text(size = 12, angle = 0, hjust = .5),    # Increase x-axis text size
+    axis.text.y = element_text(size = 12),    # Increase y-axis text size
+    plot.title = element_text(size = 16, hjust = 0.5)       # Increase plot title size
+  )
+
+test <- split(PFAS_meta$iCa, PFAS_meta$Drug)
+
+anova_iCa <- aov(PFAS_meta$iCa ~ PFAS_meta$Drug, data = test)
+summary(anova_iCa)
+
+```
+
+#11. TCO2
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
+ggplot(data = PFAS_meta, aes(x = Drug, y = TCO2, color = Drug)) + 
+  geom_point(size = 3) +
+  theme_classic() +
+  labs(x = "Drug", y = "TCO2 (mmol/L)", title = "TCO2 levels") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  # Rotate x-axis labels for better visibility
+    theme(
+    axis.title.x = element_text(size = 14),  # Increase x-axis title size
+    axis.title.y = element_text(size = 14),  # Increase y-axis title size
+    axis.text.x = element_text(size = 12, angle = 0, hjust = .5),    # Increase x-axis text size
+    axis.text.y = element_text(size = 12),    # Increase y-axis text size
+    plot.title = element_text(size = 16, hjust = 0.5)       # Increase plot title size
+  )
+
+test <- split(PFAS_meta$TCO2, PFAS_meta$Drug)
+
+anova_TCO2 <- aov(PFAS_meta$TCO2 ~ PFAS_meta$Drug, data = test)
+summary(anova_TCO2)
+
+```
+#12. Glucose
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
+ggplot(data = PFAS_meta, aes(x = Drug, y = Glu, color = Drug)) + 
+  geom_point(size = 3) +
+  theme_classic() +
+  labs(x = "Drug", y = "Glu (mg/dL)", title = "Glucose levels") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  # Rotate x-axis labels for better visibility
+    theme(
+    axis.title.x = element_text(size = 14),  # Increase x-axis title size
+    axis.title.y = element_text(size = 14),  # Increase y-axis title size
+    axis.text.x = element_text(size = 12, angle = 0, hjust = .5),    # Increase x-axis text size
+    axis.text.y = element_text(size = 12),    # Increase y-axis text size
+    plot.title = element_text(size = 16, hjust = 0.5)       # Increase plot title size
+  )
+
+test <- split(PFAS_meta$Glu, PFAS_meta$Drug)
+
+anova_Glu <- aov(PFAS_meta$Glu ~ PFAS_meta$Drug, data = test)
+summary(anova_Glu)
+
+```
+
+#13. HCT
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
+ggplot(data = PFAS_meta, aes(x = Drug, y = Hct, color = Drug)) + 
+  geom_point(size = 3) +
+  theme_classic() +
+  labs(x = "Drug", y = "Hct (%)", title = "HCT levels") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  # Rotate x-axis labels for better visibility
+    theme(
+    axis.title.x = element_text(size = 14),  # Increase x-axis title size
+    axis.title.y = element_text(size = 14),  # Increase y-axis title size
+    axis.text.x = element_text(size = 12, angle = 0, hjust = .5),    # Increase x-axis text size
+    axis.text.y = element_text(size = 12),    # Increase y-axis text size
+    plot.title = element_text(size = 16, hjust = 0.5)       # Increase plot title size
+  )
+
+test <- split(PFAS_meta$Hct, PFAS_meta$Drug)
+
+anova_Hct <- aov(PFAS_meta$Hct ~ PFAS_meta$Drug, data = test)
+summary(anova_Hct)
+
+```
+#14. Hb
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
+ggplot(data = PFAS_meta, aes(x = Drug, y = Hb, color = Drug)) + 
+  geom_point(size = 3) +
+  theme_classic() +
+  labs(x = "Drug", y = "Hb (g/dL)", title = "Hb levels") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  # Rotate x-axis labels for better visibility
+    theme(
+    axis.title.x = element_text(size = 14),  # Increase x-axis title size
+    axis.title.y = element_text(size = 14),  # Increase y-axis title size
+    axis.text.x = element_text(size = 12, angle = 0, hjust = .5),    # Increase x-axis text size
+    axis.text.y = element_text(size = 12),    # Increase y-axis text size
+    plot.title = element_text(size = 16, hjust = 0.5)       # Increase plot title size
+  )
+
+test <- split(PFAS_meta$Hb, PFAS_meta$Drug)
+
+anova_Hb <- aov(PFAS_meta$Hb ~ PFAS_meta$Drug, data = test)
+summary(anova_Hb)
 
 ```
 
