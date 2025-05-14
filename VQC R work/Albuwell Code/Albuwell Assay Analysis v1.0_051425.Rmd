@@ -1,5 +1,5 @@
 ---
-title: "Albuwell Assay Analysis 2.0"
+title: "Albuwell Assay Analysis 1.0"
 author: "Victoria Quon-Chow"
 date: "`r format(Sys.time(), '%d %B %Y')`"
 output:
@@ -56,10 +56,10 @@ here()
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
-dilution <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Long_PFAS_Albuwell_051325.xlsx"), detectDates = TRUE)
+test <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Long_PFAS_Albuwell_051325.xlsx"))
 
-
-subset <- dilution[18:25, 2:5]
+# isolate to plate
+subset_df <- test[17:25, 2:5]
 
 ```
 
@@ -72,15 +72,15 @@ subset <- dilution[18:25, 2:5]
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
-# rename the columns to 1-12
-colnames(subset) <- c("Row", 1:3)
+# rename the columns to 1-3
+colnames(subset_df) <- c("Row", 1:3)
 
 ```
 
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
-tidy <- subset %>%
+tidy_df <- subset_df %>%
   pivot_longer(cols = -Row, # Pivot all columns except Row
                names_to = "Column", # Name of new column for the old column names
                values_to = "Value") %>% # Name of new column for the values
@@ -100,10 +100,10 @@ tidy <- subset %>%
 
 # Load Sample Info
 
-dilution_sample <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Long_PFAS_Albuwell_Sample_051325.xlsx"), detectDates = TRUE)
+df.Sample <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Long_PFAS_Albuwell_Sample_051325.xlsx"))
 
-tidy_data <- tidy %>%
-  left_join(dilution_sample, by = c("Cell" = "Cell")) 
+tidy_data <- tidy_df %>%
+  left_join(df.Sample, by = c("Cell" = "Cell")) 
 
 ```
 
@@ -212,24 +212,18 @@ ggplot(df_test, aes(x = Ladder_Value, y = Solved, color = as.character(Ladder_Va
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
 df_sample_test <- tidy_data_solved %>%
-  filter(Sample != "Blank" | Sample != "Ladder"| Sample != "Max")
-
-# filter tidy_data_solved to not include Blank, Max, or Ladder in the Sample column
+  filter(Type == "Sample")
 
 df_sample_test
 
-p + geom_point(data = df_sample_test, aes(x = Solved, y = Value2), color = as.character(df_sample_test$Dilution), size = 3)
-
-# If Dilution is greater than 10 then write (Above), if the not write OK
-
-df_sample_test <- df_sample_test %>%
-  mutate(Dilution_calc = ifelse(Solved > 10, "Above", "OK"))
+p + geom_point(data = df_sample_test, aes(x = Solved, y = Value2, color = as.character(Dilution)), size = 3) +
+  labs(color = "Dilution")  # Change the legend title to "Dilution"
 
 ```
 
 # Calculate with Dilution Factor
 
-```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.width = 10}
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.width=15, fig.height=5}
 
 tidy_data_solved_dil <- tidy_data_solved  %>%
   mutate(Concentration = Solved * Dilution)
@@ -258,42 +252,7 @@ ggplot(tidy_data_solved_dil2, aes(x = Sample, y = Mean, color = as.character(Dil
        y = "Concentration",
        color = "Dilution")
 
-```
 
-```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=20, fig.height=5}
-
-tidy_data_solved <- tidy_data_solved %>%
-  mutate(Dilution_calc = ifelse(Solved > 5, "Above", "OK"))
-
-tidy_data_solved_dil <- tidy_data_solved  %>%
-  mutate(Concentration = Solved * Dilution)
-
-# createa  scatterplot of tidy_data_solved_dil of the Concentration that colors by dilution
-
-ggplot(tidy_data_solved_dil, aes(x = Sample, y = Concentration, color = as.character(Dilution))) +
-  geom_point() +
-  theme_minimal() +
-  labs(title = "Concentration of Albumin by Dilution",
-       x = "Cell",
-       y = "Concentration",
-       color = "Dilution")
-
-ggplot(tidy_data_solved_dil, aes(x = Sample, y = Concentration, color = Dilution_calc)) +
-  geom_point() +
-  theme_minimal() +
-  labs(title = "Concentration of Albumin by Dilution",
-       x = "Cell",
-       y = "Concentration",
-       color = "Dilution")
-
-
-
-table <- tidy_data_solved_dil %>%
-  filter(Type == "Sample") %>%
-  group_by(Dilution, Dilution_calc) %>%
-  summarize(count = n())
-
-table
 
 albumin_table <- tidy_data_solved_dil %>%
   filter(Dilution_calc != "Above") %>%
@@ -301,13 +260,11 @@ albumin_table <- tidy_data_solved_dil %>%
   group_by(Sample) %>%
   summarize(Alb_Concentration = mean(Concentration))
 
-
-
 ```
 
 # Add Sample Metadata
 
-```{r eval=FALSE, error=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
 df.meta <- read.xlsx(here("Dataset (241028)", "PTKO AngII Metadata_v2.xlsx"), colNames = F, rowNames = T)
 
@@ -337,7 +294,39 @@ ggplot(tidy_data_solved_dil_meta2, aes(x = `Timepoint Cre`, y = Alb, color = as.
        y = "Concentration",
        color = "Dilution")
 
-tidy_data_solved_dil_meta2
+
+
+ggplot(tidy_data_solved_dil_meta2, aes(x = `Timepoint Cre`, y = Alb, color = as.character(Cre))) +
+  geom_point(size = 3) +
+  geom_line(aes(group = ID_2), color = "black") +
+  theme_minimal() +
+  labs(title = "Concentration of Albumin by Dilution",
+       x = "Timepoint Cre",
+       y = "Concentration",
+       color = "Dilution")
+
+
+
+ggplot(tidy_data_solved_dil_meta2, aes(x = `Timepoint Cre`, y = Alb, color = as.character(Cre))) +
+  geom_point(size = 3) +
+  geom_line(aes(group = ID_2), color = "black") +
+  theme_minimal() +
+  labs(title = "Concentration of Albumin by Dilution",
+       x = "Timepoint Cre",
+       y = "Concentration",
+       color = "Dilution")
+
+# Force the X order in this ggplot to be Baseline Cre-, D5 Cre-, Baseline Cre+, D5 Cre+
+
+ggplot(tidy_data_solved_dil_meta2, aes(x = factor(`Timepoint Cre`, levels = c("Baseline Cre-", "D5 Cre-", "Baseline Cre+", "D5 Cre+")), y = Alb, color = as.character(Cre))) +
+  geom_point(size = 3) +
+  geom_line(aes(group = ID_2), color = "black") +
+  theme_minimal() +
+  labs(title = "Concentration of Albumin by Dilution",
+       x = "Timepoint Cre",
+       y = "Concentration",
+       color = "Dilution")
+
 
 ```
 
@@ -345,12 +334,12 @@ tidy_data_solved_dil_meta2
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
-df_creatinine <- read.xlsx(here("Dataset (241122)", "241114_Creatinine_NK.xlsx"))
+df_creatinine <- read.xlsx(here("Dataset (241028)", "241112_Creatinine_NK.xlsx"))
 
-subset_pre <- df_creatinine[19:26, 2:9]
+subset_pre <- df_creatinine[19:26, 2:10]
 
 # rename the columns to 1-12
-colnames(subset_pre) <- c("Row", 1:7)
+colnames(subset_pre) <- c("Row", 1:8)
 
 subset_pre <- subset_pre %>%
   mutate(across(-Row, as.numeric))
@@ -367,12 +356,12 @@ as.character(colnames(subset_pre))
 
 #set the colnames as characters
 
-df_creatinine_post <- read.xlsx(here("Dataset (241122)", "241114_Creatinine+Acid_NK.xlsx"))
+df_creatinine_post <- read.xlsx(here("Dataset (241028)", "241112_Creatinine+acid_NK.xlsx"))
 
-subset_post <- df_creatinine_post[19:26, 2:9]
+subset_post <- df_creatinine_post[19:26, 2:10]
 
 # rename the columns to 1-12
-colnames(subset_post) <- c("Row", 1:7)
+colnames(subset_post) <- c("Row", 1:8)
 
 subset_post <- subset_post %>%
   mutate(across(-Row, as.numeric))
@@ -402,7 +391,7 @@ tidy_df <- tidy_df %>%
 
 # Load Sample Info
 
-df.Sample <- read.xlsx(here("Dataset (241122)", "241114 Creatinine Sample Info.xlsx"))
+df.Sample <- read.xlsx(here("Dataset (241028)", "241030 Creatinine Sample Info.xlsx"))
 
 tidy_data <- tidy_df %>%
   left_join(df.Sample, by = c("Cell" = "Cell")) 
@@ -532,7 +521,7 @@ df_sample_test <- df_sample_test %>%
 
 # Calculate with Dilution Factor
 
-```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=10, fig.height=5}
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=15, fig.height=5}
 
 tidy_data_solved <- tidy_data_solved %>%
   mutate(Dilution_calc = ifelse(Solved < 1, "Below", "OK"))
@@ -589,6 +578,31 @@ df.ACR
 ```
 
 
+#Graph of ACR by group
+
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
+
+ACR_meta <- tidy_data_solved_dil_meta2 %>%
+  left_join(df.ACR, by = c("Sample" = "Sample"))
+
+levels(df.ACR$'Timepoint Cre')
+
+levels(ACR_meta$'Timepoint Cre')
+
+ACR_meta$`Timepoint Cre` <- as.factor(ACR_meta$`Timepoint Cre`)
+
+
+ggplot(ACR_meta, aes(x = `Timepoint Cre`, y = ACR_mg_g, color = as.character(Cre))) +
+  geom_point(size = 3) +
+  theme_minimal() +
+  labs(title = "ACR by Dilution",
+       x = "Timepoint Cre",
+       y = "ACR",
+       color = "Dilution")
+
+
+```
+
 # Session Info
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
@@ -598,3 +612,19 @@ sessionInfo()
 ```
 
 
+
+
+
+
+
+
+# Session Info
+
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
+
+sessionInfo()
+
+```
+
+
+  
