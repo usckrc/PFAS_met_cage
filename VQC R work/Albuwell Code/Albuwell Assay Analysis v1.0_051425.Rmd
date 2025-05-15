@@ -56,10 +56,10 @@ here()
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
-test <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Long_PFAS_Albuwell_051325.xlsx"))
+test <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Albuwell_05142025.xlsx"))
 
 # isolate to plate
-subset_df <- test[17:25, 2:5]
+subset_df <- test[9:16, 1:9]
 
 ```
 
@@ -73,20 +73,27 @@ subset_df <- test[17:25, 2:5]
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
 # rename the columns to 1-3
-colnames(subset_df) <- c("Row", 1:3)
+colnames(subset_df) <- c("Row", 1:8)
 
 ```
 
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
+subset_df %>%
+  mutate(across(-Row, as.numeric)) %>%  # or use as.character if preferred
+  pivot_longer(cols = -Row, names_to = "Column", values_to = "Value")
 
-tidy_df <- subset_df %>%
-  pivot_longer(cols = -Row, # Pivot all columns except Row
-               names_to = "Column", # Name of new column for the old column names
-               values_to = "Value") %>% # Name of new column for the values
-  mutate(Cell = paste0(Row, Column))%>% # Create the new Cell column
-  select(-Row, -Column) %>%
+clean_df <- subset_df %>%
+  mutate(across(-Row, as.numeric))  # or as.character if needed
+
+
+tidy_df <- clean_df %>%
+  pivot_longer(cols = -Row,
+               names_to = "Column",
+               values_to = "Value") %>%
+  mutate(Cell = paste0(Row, Column)) %>%
   select(Cell, Value)
+
 
 ```
 
@@ -100,7 +107,7 @@ tidy_df <- subset_df %>%
 
 # Load Sample Info
 
-df.Sample <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Long_PFAS_Albuwell_Sample_051325.xlsx"))
+df.Sample <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Long_PFAS_Albuwell_Sample_051425.xlsx"))
 
 tidy_data <- tidy_df %>%
   left_join(df.Sample, by = c("Cell" = "Cell")) 
