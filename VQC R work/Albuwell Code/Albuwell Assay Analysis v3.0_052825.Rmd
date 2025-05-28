@@ -273,18 +273,13 @@ albumin_table <- tidy_data_solved_dil %>%
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
-df.meta <- read.xlsx(here("Dataset (241028)", "PTKO AngII Metadata_v2.xlsx"), colNames = F, rowNames = T)
+df.meta <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Long_PFAS_Metadata.xlsx"), colNames = F, rowNames = T)
 
 df.meta2 <- df.meta %>%
 t() %>%
 as.data.frame() 
 
 df.meta2$UV <- as.numeric(df.meta2$UV)
-
-df.meta2$'Timepoint Cre' <- factor(df.meta2$'Timepoint Cre')
-
-levels(df.meta2$'Timepoint Cre')
-
 
 tidy_data_solved_dil_meta <- tidy_data_solved_dil2 %>%
 left_join(df.meta2, by = c("Sample" = "ID"))
@@ -293,46 +288,7 @@ tidy_data_solved_dil_meta2 <- tidy_data_solved_dil_meta  %>%
 filter(!is.na(Concentration)) %>%
 mutate(Alb = Mean * UV)
 
-ggplot(tidy_data_solved_dil_meta2, aes(x = `Timepoint Cre`, y = Alb, color = as.character(Cre))) +
-  geom_point(size = 3) +
-  theme_minimal() +
-  labs(title = "Concentration of Albumin by Dilution",
-       x = "Timepoint Cre",
-       y = "Concentration",
-       color = "Dilution")
 
-
-
-ggplot(tidy_data_solved_dil_meta2, aes(x = `Timepoint Cre`, y = Alb, color = as.character(Cre))) +
-  geom_point(size = 3) +
-  geom_line(aes(group = ID_2), color = "black") +
-  theme_minimal() +
-  labs(title = "Concentration of Albumin by Dilution",
-       x = "Timepoint Cre",
-       y = "Concentration",
-       color = "Dilution")
-
-
-
-ggplot(tidy_data_solved_dil_meta2, aes(x = `Timepoint Cre`, y = Alb, color = as.character(Cre))) +
-  geom_point(size = 3) +
-  geom_line(aes(group = ID_2), color = "black") +
-  theme_minimal() +
-  labs(title = "Concentration of Albumin by Dilution",
-       x = "Timepoint Cre",
-       y = "Concentration",
-       color = "Dilution")
-
-# Force the X order in this ggplot to be Baseline Cre-, D5 Cre-, Baseline Cre+, D5 Cre+
-
-ggplot(tidy_data_solved_dil_meta2, aes(x = factor(`Timepoint Cre`, levels = c("Baseline Cre-", "D5 Cre-", "Baseline Cre+", "D5 Cre+")), y = Alb, color = as.character(Cre))) +
-  geom_point(size = 3) +
-  geom_line(aes(group = ID_2), color = "black") +
-  theme_minimal() +
-  labs(title = "Concentration of Albumin by Dilution",
-       x = "Timepoint Cre",
-       y = "Concentration",
-       color = "Dilution")
 
 
 ```
@@ -542,7 +498,7 @@ tidy_data_solved_dil <- tidy_data_solved  %>%
 ggplot(tidy_data_solved_dil, aes(x = Sample, y = Concentration, color = as.character(Dilution))) +
   geom_point() +
   theme_minimal() +
-  labs(title = "Concentration of Albumin by Dilution",
+  labs(title = "Concentration of Creatinine by Dilution",
        x = "Cell",
        y = "Concentration",
        color = "Dilution")
@@ -550,7 +506,7 @@ ggplot(tidy_data_solved_dil, aes(x = Sample, y = Concentration, color = as.chara
 ggplot(tidy_data_solved_dil, aes(x = Sample, y = Concentration, color = Dilution_calc)) +
   geom_point() +
   theme_minimal() +
-  labs(title = "Concentration of Albumin by Dilution",
+  labs(title = "Concentration of Creatinine by Dilution",
        x = "Cell",
        y = "Concentration",
        color = "Dilution")
@@ -567,7 +523,31 @@ creatinine_table <- tidy_data_solved_dil %>%
   summarize(Cre_Concentration = mean(Concentration))
 
 
+#convert grams to dL for urine
+tidy_data_solved_dil_meta$Urine_dL <- tidy_data_solved_dil_meta$UV * 0.01
+  
+#creatinine mass
+tidy_data_solved_dil_meta$Creatinine_Mass <- tidy_data_solved_dil_meta$Urine_dL * tidy_data_solved_dil_meta$Concentration
+
+tidy_data_solved_dil_meta <- tidy_data_solved_dil_meta[!is.na(tidy_data_solved_dil_meta$Treatment), ]
+
+tidy_data_solved_dil_meta$Treatment <- factor(tidy_data_solved_dil_meta$Treatment,
+  levels = c("Vehicle", "1 mg", "10 mg")
+)
+
+#Bar graph for Creatinine Mass
+ggplot(tidy_data_solved_dil_meta, aes(x = Treatment, y = Creatinine_Mass, fill = Timepoint)) +
+  stat_summary(fun = "mean", geom = "bar", position = position_dodge(width = 0.9)) +
+  labs(title = "Creatinine Mass at Baseline and Endpoint by Treatment Group",
+       x = "Treatment Group",
+       y = "Mean Creatinine Mass") +
+  theme_minimal() +
+  scale_fill_manual(values = c("Baseline" = "#1f77b4", "Final" = "#ff7f0e"))
+
+
 ```
+
+
 
 # Calculate ACR
 
