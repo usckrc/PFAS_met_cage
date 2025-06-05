@@ -1,0 +1,617 @@
+---
+title: "Albuwell Assay Analysis 1.0"
+author: "Victoria Quon-Chow"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output:
+  html_document: 
+    toc: yes
+    toc_depth: 3
+    toc_float: true
+    number_sections: no
+    theme: bootstrap
+    df_print: paged
+    code_folding: hide
+    highlight: pygments
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r load new packages, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+
+if (!require("dplyr")) {install.packages("dplyr"); require("dplyr")}
+if (!require("patchwork")) {install.packages("patchwork"); require("patchwork")}
+if (!require("knitr")) {install.packages("knitr"); require("knitr")}
+if (!require("ggplot2")) {install.packages("ggplot2"); require("ggplot2")}
+if (!require("tibble")) {install.packages("tibble"); require("tibble")}
+if (!require("ggpmisc")) {install.packages("ggpmisc"); require("ggpmisc")}
+if (!require("RColorBrewer")) {install.packages("RColorBrewer"); require("RColorBrewer")} #color
+if (!require("ggrepel")) {install.packages("ggrepel"); require("ggrepel")}
+if (!require("here")) {install.packages("here"); require("here")}
+if (!require("dichromat")) {install.packages("dichromat"); require("dichromat")}
+if (!require("openxlsx")) {install.packages("openxlsx"); require("openxlsx")}
+if (!require("ggrepel")) {install.packages("ggrepel"); require("ggrepel")}
+
+library(pheatmap)
+library(ggplot2)
+library(ggplotify)
+library(pheatmap)
+library(patchwork)
+
+library(tidyr)
+
+here()
+
+```
+
+# Introduction
+
+# Start with Plate Reader Spreadsheet
+
+## View in Excel vs. View in R
+
+![](`r here::here("Images", "Tutorial 1.png")`)
+
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
+
+test <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Albuwell_060425.xlsx"))
+
+# isolate to plate
+subset_df <- test[9:16, 1:9]
+
+```
+
+
+## The subset of the data looks like this
+
+![](`r here::here("Images", "Tutorial 2.png")`)
+
+## Next we will rename the columns to 1-12 and pivot the data to long format
+
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
+
+# rename the columns to 1-3
+colnames(subset_df) <- c("Row", 1:8)
+
+```
+
+
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
+subset_df %>%
+  mutate(across(-Row, as.numeric)) %>%  # or use as.character if preferred
+  pivot_longer(cols = -Row, names_to = "Column", values_to = "Value")
+
+clean_df <- subset_df %>%
+  mutate(across(-Row, as.numeric))  # or as.character if needed
+
+
+tidy_df <- clean_df %>%
+  pivot_longer(cols = -Row,
+               names_to = "Column",
+               values_to = "Value") %>%
+  mutate(Cell = paste0(Row, Column)) %>%
+  select(Cell, Value)
+
+
+```
+
+## This is what the tidy data looks like
+
+![](`r here::here("Images", "Tutorial 3.png")`)
+
+# Load Sample Info and Merge the data
+
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
+
+# Load Sample Info
+
+df.Sample <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Long_PFAS_Albuwell_Sample_051425.xlsx"))
+
+tidy_data <- tidy_df %>%
+  left_join(df.Sample, by = c("Cell" = "Cell")) 
+
+```
+
+# Graph the Ladder
+
+## Graph ladder and calculate the curve fit
+
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
+
+# filter if Sample is Ladder or Blank
+
+df.Ladder <- tidy_data %>%
+  filter(Sample == "Ladder" | Sample == "Blank")
+
+# Subtract Blank and remove the Blank row
+
+df.Ladder2 <- df.Ladder %>%
+    mutate(Value2 = ifelse(Sample != "Blank", Value - filter(df.Ladder, Sample == "Blank")$Value, NA)) %>%
+    filter(!is.na(Value2))
+
+# Create a scatter plot of df.Ladder2
+
+ggplot(df.Ladder2, aes(x = Ladder_Value, y = Value2, color = Sample)) +
+  geom_point() +
+  theme_minimal() +
+  labs(title = "Ladder",
+       x = "Cell",
+       y = "Value",
+       color = "Sample")
+
+# curve fit the data using a natural log
+
+x <- df.Ladder2$Ladder_Value
+y <- df.Ladder2$Value2
+
+# Fit the non-linear regression model
+fit <- nls(y ~ a + b * log(x), start = list(a = 1, b = 1))
+
+# Print summary of the non-linear regression
+summary(fit)
+
+# Extract coefficients
+coefficients <- coef(fit)
+m <- as.numeric(coefficients[2])
+b <- as.numeric(coefficients[1])
+
+# Calculate predicted values
+predicted <- predict(fit, list(x = x))
+
+# Calculate R-squared
+residuals <- y - predicted
+rss <- sum(residuals^2)
+tss <- sum((y - mean(y))^2)
+r_squared <- 1 - rss/tss
+
+# Create data for plotting
+plot_data <- data.frame(x = x, y = y, Predicted = predicted)
+
+# Create the ggplot with scatter plot and fitted line
+p <- ggplot(plot_data, aes(x = x, y = y)) +
+  geom_point(color = "darkred", size = 5) +  # Scatter plot of x vs y
+  geom_line(aes(y = Predicted), color = "red") +  # Fitted line
+  labs(
+    title = paste0("Scatter plot with Non-linear Logarithmic Fit: y =", round(m, 3), "ln(x) +", round(b, 3), "\nR² =", round(r_squared, 3)),
+    x = "Albumin Concentration",
+    y = "Absorbance"
+  ) +
+  theme_classic()
+
+# Print the plot
+print(p)
+
+
+```
+
+# Calcuate back the latter values based on the fit equation
+
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
+
+# Subtract Blank and calculate the values
+
+tidy_data_blank <- tidy_data %>%
+    mutate(Value2 = ifelse(Sample != "Blank", Value - filter(df.Ladder, Sample == "Blank")$Value, NA)) %>%
+    filter(!is.na(Value2))
+
+tidy_data_solved <- tidy_data_blank  %>%
+  mutate(Solved = exp((Value2 - b) / m))
+
+df_test <- tidy_data_solved %>%
+  filter(Sample == "Ladder")
+
+# Create a scatter plot of df_test
+
+ggplot(df_test, aes(x = Ladder_Value, y = Solved, color = as.character(Ladder_Value))) +
+  geom_point(size = 5) +
+  theme_minimal() +
+  labs(title = "Checking Equation Fit Against Ladder",
+       x = "Sample",
+       y = "Value",
+       color = "Cell")
+
+```
+
+# Graph the sample data on the solved curve split by dilution factor
+
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
+
+df_sample_test <- tidy_data_solved %>%
+  filter(Type == "Sample")
+
+df_sample_test
+
+p + geom_point(data = df_sample_test, aes(x = Solved, y = Value2, color = as.character(Dilution)), size = 3) +
+  labs(color = "Dilution")  # Change the legend title to "Dilution"
+
+```
+
+# Calculate with Dilution Factor
+
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.width=15, fig.height=5}
+
+tidy_data_solved_dil <- tidy_data_solved  %>%
+  mutate(Concentration = Solved * Dilution)
+
+# createa  scatterplot of tidy_data_solved_dil of the Concentration that colors by dilution
+
+ggplot(tidy_data_solved_dil, aes(x = Sample, y = Concentration, color = as.character(Replicate))) +
+  geom_point(size = 3) +
+  theme_minimal() +
+  labs(title = "Concentration of Albumin by Dilution",
+       x = "Cell",
+       y = "Concentration",
+       color = "Dilution")
+
+# create a new column that measures the mean of the values for each sample
+
+tidy_data_solved_dil2 <- tidy_data_solved_dil %>%
+  group_by(Sample) %>%
+  mutate(Mean = mean(Concentration, na.rm = TRUE))
+
+ggplot(tidy_data_solved_dil2, aes(x = Sample, y = Mean, color = as.character(Dilution))) +
+  geom_point(size = 3) +
+  theme_minimal() +
+  labs(title = "Concentration of Albumin by Dilution",
+       x = "Cell",
+       y = "Concentration",
+       color = "Dilution")
+
+
+
+albumin_table <- tidy_data_solved_dil %>%
+  filter(Dilution_calc != "Above") %>%
+  filter(Dilution == "10") %>% 
+  group_by(Sample) %>%
+  summarize(Alb_Concentration = mean(Concentration))
+
+```
+
+# Add Sample Metadata
+
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
+
+df.meta <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Long_PFAS_Metadata.xlsx"), colNames = F, rowNames = T)
+
+df.meta2 <- df.meta %>%
+t() %>%
+as.data.frame() 
+
+df.meta2$UV <- as.numeric(df.meta2$UV)
+
+tidy_data_solved_dil_meta <- tidy_data_solved_dil2 %>%
+left_join(df.meta2, by = c("Sample" = "ID"))
+
+tidy_data_solved_dil_meta2 <- tidy_data_solved_dil_meta  %>%
+filter(!is.na(Concentration)) %>%
+mutate(Alb = Mean * UV)
+
+
+
+
+```
+
+# Read in Creatinine Values
+
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
+
+df_creatinine <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Creatinine052125.xlsx"))
+
+subset_pre <- df_creatinine[9:15, 1:9]
+
+# rename the columns to 1-12
+colnames(subset_pre) <- c("Row", 1:8)
+
+subset_pre <- subset_pre %>%
+  mutate(across(-Row, as.numeric))
+
+tidy_df_pre <- subset_pre  %>%
+  pivot_longer(cols = -Row, # Pivot all columns except Row
+               names_to = "Column", # Name of new column for the old column names
+               values_to = "Value") %>% # Name of new column for the values
+  mutate(Cell = paste0(Row, Column))%>% # Create the new Cell column
+  select(-Row, -Column) %>%
+  select(Cell, Value)
+
+as.character(colnames(subset_pre))
+
+#set the colnames as characters
+
+df_creatinine_post <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Creatinine_Acid052125.xlsx"))
+
+subset_post <- df_creatinine_post[9:15, 1:9]
+
+# rename the columns to 1-12
+colnames(subset_post) <- c("Row", 1:8)
+
+subset_post <- subset_post %>%
+  mutate(across(-Row, as.numeric))
+
+tidy_df_post <- subset_post  %>%
+  pivot_longer(cols = -Row, # Pivot all columns except Row
+               names_to = "Column", # Name of new column for the old column names
+               values_to = "Value") %>% # Name of new column for the values
+  mutate(Cell = paste0(Row, Column))%>% # Create the new Cell column
+  select(-Row, -Column) %>%
+  select(Cell, Value)
+
+# merge tidy_df_pre and tidy_df_post by Row
+
+tidy_df <- merge(tidy_df_pre, tidy_df_post, by = "Cell")
+
+
+tidy_df <- tidy_df %>%
+  mutate(Value = Value.x - Value.y) %>%
+  select(Cell, Value)
+
+```
+
+# Load Sample Info and Merge the data
+
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
+
+# Load Sample Info
+
+df.Sample <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Creatinine_Sample_052025.xlsx"))
+
+tidy_data <- tidy_df %>%
+  left_join(df.Sample, by = c("Cell" = "Cell")) 
+
+```
+
+# Graph the Ladder
+
+## Graph ladder and calculate the curve fit for creatinine
+
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
+
+# filter if Sample is Ladder or Blank
+
+df.Ladder <- tidy_data %>%
+  filter(Sample == "Ladder")
+
+# Subtract Blank and remove the Blank row
+
+#df.Ladder2 <- df.Ladder %>%
+#    mutate(Value2 = ifelse(Sample != "Blank", Value - filter(df.Ladder, Sample == "Blank")$Value, NA)) %>%
+#    filter(!is.na(Value2))
+
+# remove row 6
+
+#df.Ladder <- df.Ladder[-6,]
+
+#df.Ladder2 <- df.Ladder %>%
+#  group_by(Ladder_Value, Sample) %>%
+#    summarize(Value2 = mean(Value)) %>%
+#    na.omit(Value2)
+  
+# Create a scatter plot of df.Ladder
+
+ggplot(df.Ladder, aes(x = Ladder_Value, y = Value, color = Sample)) +
+  geom_point() +
+  theme_minimal() +
+  labs(title = "Ladder",
+       x = "Cell",
+       y = "Value",
+       color = "Sample")
+
+# curve fit the data using a natural log
+
+x <- df.Ladder$Ladder_Value
+y <- df.Ladder$Value
+
+fit <- lm(Value ~ Ladder_Value, data = df.Ladder)
+
+# Print summary of the non-linear regression
+summary(fit)
+
+coefficients <- coef(fit)
+m <- coefficients["Ladder_Value"]
+b <- coefficients["(Intercept)"]
+
+
+plot_data <- data.frame(x = x, y = y, Predicted = predict(fit, newdata = data.frame(Ladder_Value = x)))
+
+
+# Create the ggplot with scatter plot and fitted line
+p <- ggplot(plot_data, aes(x = x, y = y)) +
+  geom_point() +  # Scatter plot of x vs y
+  geom_line(aes(y = Predicted), color = "red") +  # Fitted line
+  labs(
+    title = paste0("Scatter plot with Non-linear Logarithmic Fit: y =", round(m, 3), "ln(x) +", round(b, 3)),
+    x = "Creatinine Concentration",
+    y = "Absorbance"
+  ) +
+  theme_classic() +
+  geom_point(color = "darkred", size = 5)
+
+p
+
+
+```
+
+# Calcuate the values from the samples
+
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
+
+# Subtract Blank and calculate the values
+
+tidy_data_blank <- tidy_data %>%
+   mutate(Value = ifelse(Sample != "Blank", Value - filter(df.Ladder, Sample == "Blank")$Value, NA)) %>%
+   filter(!is.na(Value))
+
+tidy_data_blank <- tidy_data %>%
+    mutate(Value = Value) %>%
+    filter(!is.na(Value))
+
+tidy_data_solved <- tidy_data_blank  %>%
+  mutate(Solved = ((Value - b) / m))
+
+df_test <- tidy_data_solved %>%
+  filter(Sample == "Ladder")
+
+# Create a scatter plot of df_test
+
+ggplot(df_test, aes(x = Ladder_Value, y = Solved, color = as.character(Ladder_Value))) +
+  geom_point() +
+  theme_minimal() +
+  labs(title = "Checking Equation Fit Against Ladder",
+       x = "Sample",
+       y = "Value",
+       color = "Cell")
+
+```
+
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
+
+df_sample_test <- tidy_data_solved %>%
+  filter(Sample != "Blank" | Sample != "Ladder"| Sample != "Max")
+
+# filter tidy_data_solved to not include Blank, Max, or Ladder in the Sample column
+
+df_sample_test
+
+p + geom_point(data = df_sample_test, aes(x = Solved, y = Value), color = as.character(df_sample_test$Dilution), size = 3)
+
+# If Dilution is greater than 10 then write (Above), if the not write OK
+
+df_sample_test <- df_sample_test %>%
+  mutate(Dilution_calc = ifelse(Solved < 1, "Below", "OK"))
+
+```
+
+# Calculate with Dilution Factor
+
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=15, fig.height=5}
+
+tidy_data_solved <- tidy_data_solved %>%
+  mutate(Dilution_calc = ifelse(Solved < 1, "Below", "OK"))
+
+tidy_data_solved_dil <- tidy_data_solved  %>%
+  mutate(Concentration = Solved * Dilution) %>%
+  filter(!is.na(Concentration))
+
+# create a  scatterplot of tidy_data_solved_dil of the Concentration that colors by dilution
+
+ggplot(tidy_data_solved_dil, aes(x = Sample, y = Concentration, color = as.character(Dilution))) +
+  geom_point() +
+  theme_minimal() +
+  labs(title = "Concentration of Creatinine by Dilution",
+       x = "Cell",
+       y = "Concentration",
+       color = "Dilution")
+
+ggplot(tidy_data_solved_dil, aes(x = Sample, y = Concentration, color = Dilution_calc)) +
+  geom_point() +
+  theme_minimal() +
+  labs(title = "Concentration of Creatinine by Dilution",
+       x = "Cell",
+       y = "Concentration",
+       color = "Dilution")
+
+table <- tidy_data_solved_dil %>%
+  group_by(Dilution, Dilution_calc) %>%
+  summarize(count = n())
+
+table
+
+creatinine_table <- tidy_data_solved_dil %>%
+  filter(Dilution == "20") %>% 
+  group_by(Sample) %>%
+  summarize(Cre_Concentration = mean(Concentration))
+
+
+#convert grams to dL for urine
+tidy_data_solved_dil_meta$Urine_dL <- tidy_data_solved_dil_meta$UV * 0.01
+  
+#creatinine mass
+tidy_data_solved_dil_meta$Creatinine_Mass <- tidy_data_solved_dil_meta$Urine_dL * tidy_data_solved_dil_meta$Concentration
+
+tidy_data_solved_dil_meta <- tidy_data_solved_dil_meta[!is.na(tidy_data_solved_dil_meta$Treatment), ]
+
+tidy_data_solved_dil_meta$Treatment <- factor(tidy_data_solved_dil_meta$Treatment,
+  levels = c("Vehicle", "1 mg", "10 mg")
+)
+
+#Bar graph for Creatinine Mass
+ggplot(tidy_data_solved_dil_meta, aes(x = Treatment, y = Creatinine_Mass, fill = Timepoint)) +
+  stat_summary(fun = "mean", geom = "bar", position = position_dodge(width = 0.9)) +
+  labs(title = "Creatinine Mass at Baseline and Endpoint by Treatment Group",
+       x = "Treatment Group",
+       y = "Mean Creatinine Mass") +
+  theme_minimal() +
+  scale_fill_manual(values = c("Baseline" = "#1f77b4", "Final" = "#ff7f0e"))
+
+
+```
+
+
+
+# Calculate ACR
+
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=10, fig.height=5}
+
+df.ACR <- merge(creatinine_table, albumin_table, by = "Sample")
+
+df.ACR <- df.ACR %>%
+  mutate(Alb_mg_dL = Alb_Concentration / 10) %>% 
+  mutate(Cre_g_dL = Cre_Concentration / 1000) %>%
+  mutate(ACR_mg_g = Alb_mg_dL / Cre_g_dL)
+
+df.ACR
+
+```
+
+
+#Graph of ACR by group
+
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
+
+ACR_meta <- tidy_data_solved_dil_meta2 %>%
+  left_join(df.ACR, by = c("Sample" = "Sample"))
+
+levels(df.ACR$'Timepoint Cre')
+
+levels(ACR_meta$'Timepoint Cre')
+
+ACR_meta$`Timepoint Cre` <- as.factor(ACR_meta$`Timepoint Cre`)
+
+
+ggplot(ACR_meta, aes(x = `Timepoint Cre`, y = ACR_mg_g, color = as.character(Cre))) +
+  geom_point(size = 3) +
+  theme_minimal() +
+  labs(title = "ACR by Dilution",
+       x = "Timepoint Cre",
+       y = "ACR",
+       color = "Dilution")
+
+
+```
+
+# Session Info
+
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
+
+sessionInfo()
+
+```
+
+
+
+
+
+
+
+
+# Session Info
+
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
+
+sessionInfo()
+
+```
+
+
+  
