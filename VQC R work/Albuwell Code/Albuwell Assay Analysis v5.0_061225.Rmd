@@ -107,7 +107,7 @@ tidy_df <- clean_df %>%
 
 # Load Sample Info
 
-df.Sample <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Long_PFAS_Albuwell_Sample_051425.xlsx"))
+df.Sample <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Long_PFAS_Albuwell_Sample_061225.xlsx"))
 
 tidy_data <- tidy_df %>%
   left_join(df.Sample, by = c("Cell" = "Cell")) 
@@ -240,10 +240,13 @@ tidy_data_solved_dil <- tidy_data_solved  %>%
 ggplot(tidy_data_solved_dil, aes(x = Sample, y = Concentration, color = as.character(Replicate))) +
   geom_point(size = 3) +
   theme_minimal() +
-  labs(title = "Concentration of Albumin by Dilution",
-       x = "Cell",
-       y = "Concentration",
-       color = "Dilution")
+  labs(
+    title = "Concentration of Albumin by Dilution",
+    x = "Dilution",  # Change if "Sample" is not "Cell"
+    y = "Concentration (µg/mL)", 
+    color = "Replicate"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 # create a new column that measures the mean of the values for each sample
 
@@ -254,11 +257,13 @@ tidy_data_solved_dil2 <- tidy_data_solved_dil %>%
 ggplot(tidy_data_solved_dil2, aes(x = Sample, y = Mean, color = as.character(Dilution))) +
   geom_point(size = 3) +
   theme_minimal() +
-  labs(title = "Concentration of Albumin by Dilution",
-       x = "Cell",
-       y = "Concentration",
-       color = "Dilution")
-
+  labs(
+    title = "Concentration of Albumin by Dilution",
+    x = "Dilution",  # Or "Sample", based on context
+    y = "Mean Albumin Concentration (µg/mL)",  
+    color = "Dilution"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 
 albumin_table <- tidy_data_solved_dil %>%
