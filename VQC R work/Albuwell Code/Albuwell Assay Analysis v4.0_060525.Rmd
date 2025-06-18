@@ -471,7 +471,7 @@ df_sample_test <- tidy_data_solved %>%
 
 # filter tidy_data_solved to not include Blank, Max, or Ladder in the Sample column
 
-df_sample_test
+df_sample_test.  
 
 p + geom_point(data = df_sample_test, aes(x = Solved, y = Value), color = as.character(df_sample_test$Dilution), size = 3)
 
