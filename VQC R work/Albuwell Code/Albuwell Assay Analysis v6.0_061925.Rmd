@@ -56,7 +56,7 @@ here()
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
-test <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Albuwell_060425.xlsx"))
+test <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Albuwell_061225.xlsx"))
 
 # isolate to plate
 subset_df <- test[9:16, 1:9]
@@ -107,7 +107,7 @@ tidy_df <- clean_df %>%
 
 # Load Sample Info
 
-df.Sample <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Long_PFAS_Albuwell_Sample_051425.xlsx"))
+df.Sample <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Long_PFAS_Albuwell_Sample_061225.xlsx"))
 
 tidy_data <- tidy_df %>%
   left_join(df.Sample, by = c("Cell" = "Cell")) 
@@ -240,10 +240,13 @@ tidy_data_solved_dil <- tidy_data_solved  %>%
 ggplot(tidy_data_solved_dil, aes(x = Sample, y = Concentration, color = as.character(Replicate))) +
   geom_point(size = 3) +
   theme_minimal() +
-  labs(title = "Concentration of Albumin by Dilution",
-       x = "Cell",
-       y = "Concentration",
-       color = "Dilution")
+  labs(
+    title = "Concentration of Albumin by Dilution",
+    x = "Dilution",  # Change if "Sample" is not "Cell"
+    y = "Concentration (µg/mL)", 
+    color = "Replicate"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 # create a new column that measures the mean of the values for each sample
 
@@ -254,18 +257,14 @@ tidy_data_solved_dil2 <- tidy_data_solved_dil %>%
 ggplot(tidy_data_solved_dil2, aes(x = Sample, y = Mean, color = as.character(Dilution))) +
   geom_point(size = 3) +
   theme_minimal() +
-  labs(title = "Concentration of Albumin by Dilution",
-       x = "Cell",
-       y = "Concentration",
-       color = "Dilution")
+  labs(
+    title = "Concentration of Albumin by Dilution",
+    x = "Dilution",  # Or "Sample", based on context
+    y = "Mean Albumin Concentration (µg/mL)",  
+    color = "Dilution"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-
-
-albumin_table <- tidy_data_solved_dil %>%
-  filter(Dilution_calc != "Above") %>%
-  filter(Dilution == "10") %>% 
-  group_by(Sample) %>%
-  summarize(Alb_Concentration = mean(Concentration))
 
 ```
 
@@ -297,9 +296,9 @@ mutate(Alb = Mean * UV)
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
-df_creatinine <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Creatinine052125.xlsx"))
+df_creatinine <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Creatinine061825.xlsx"))
 
-subset_pre <- df_creatinine[9:15, 1:9]
+subset_pre <- df_creatinine[19:25, 2:10]
 
 # rename the columns to 1-12
 colnames(subset_pre) <- c("Row", 1:8)
@@ -354,7 +353,7 @@ tidy_df <- tidy_df %>%
 
 # Load Sample Info
 
-df.Sample <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Creatinine_Sample_052025.xlsx"))
+df.Sample <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Creatinine_Sample_061825.xlsx"))
 
 tidy_data <- tidy_df %>%
   left_join(df.Sample, by = c("Cell" = "Cell")) 
@@ -369,7 +368,7 @@ tidy_data <- tidy_df %>%
 
 # filter if Sample is Ladder or Blank
 
-df.Ladder <- tidy_data %>%
+df.Ladder_Cre <- tidy_data %>%
   filter(Sample == "Ladder")
 
 # Subtract Blank and remove the Blank row
@@ -389,7 +388,7 @@ df.Ladder <- tidy_data %>%
   
 # Create a scatter plot of df.Ladder
 
-ggplot(df.Ladder, aes(x = Ladder_Value, y = Value, color = Sample)) +
+ggplot(df.Ladder_Cre, aes(x = Ladder_Value, y = Value, color = Sample)) +
   geom_point() +
   theme_minimal() +
   labs(title = "Ladder",
@@ -399,10 +398,10 @@ ggplot(df.Ladder, aes(x = Ladder_Value, y = Value, color = Sample)) +
 
 # curve fit the data using a natural log
 
-x <- df.Ladder$Ladder_Value
-y <- df.Ladder$Value
+x <- df.Ladder_Cre$Ladder_Value
+y <- df.Ladder_Cre$Value
 
-fit <- lm(Value ~ Ladder_Value, data = df.Ladder)
+fit <- lm(Value ~ Ladder_Value, data = df.Ladder_Cre)
 
 # Print summary of the non-linear regression
 summary(fit)
@@ -471,7 +470,7 @@ df_sample_test <- tidy_data_solved %>%
 
 # filter tidy_data_solved to not include Blank, Max, or Ladder in the Sample column
 
-df_sample_test.  
+df_sample_test
 
 p + geom_point(data = df_sample_test, aes(x = Solved, y = Value), color = as.character(df_sample_test$Dilution), size = 3)
 
@@ -518,7 +517,7 @@ table <- tidy_data_solved_dil %>%
 table
 
 creatinine_table <- tidy_data_solved_dil %>%
-  filter(Dilution == "20") %>% 
+  filter(Dilution == "5") %>% 
   group_by(Sample) %>%
   summarize(Cre_Concentration = mean(Concentration))
 
@@ -552,6 +551,12 @@ ggplot(tidy_data_solved_dil_meta, aes(x = Treatment, y = Creatinine_Mass, fill =
 # Calculate ACR
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=10, fig.height=5}
+
+albumin_table <- tidy_data_solved_dil %>%
+  filter(Dilution_calc != "Above") %>%
+  filter(Dilution == "10") %>% 
+  group_by(Sample) %>%
+  summarize(Alb_Concentration = mean(Concentration))
 
 df.ACR <- merge(creatinine_table, albumin_table, by = "Sample")
 
