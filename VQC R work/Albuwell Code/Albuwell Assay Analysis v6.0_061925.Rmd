@@ -541,6 +541,7 @@ tidy_data_solved_dil3 <- tidy_data_solved  %>%
 ggplot(tidy_data_solved_dil3, aes(x = Sample, y = Concentration, color = as.character(Dilution))) +
   geom_point() +
   theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   labs(title = "Concentration of Creatinine by Dilution",
        x = "Cell",
        y = "Concentration",
@@ -549,6 +550,7 @@ ggplot(tidy_data_solved_dil3, aes(x = Sample, y = Concentration, color = as.char
 ggplot(tidy_data_solved_dil3, aes(x = Sample, y = Concentration, color = Dilution_calc)) +
   geom_point() +
   theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   labs(title = "Concentration of Creatinine by Dilution",
        x = "Cell",
        y = "Concentration",
