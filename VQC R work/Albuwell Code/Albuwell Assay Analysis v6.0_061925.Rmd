@@ -589,7 +589,7 @@ ggplot(tidy_data_solved_dil_meta, aes(x = Treatment, y = Creatinine_Mass, fill =
   stat_summary(fun = "mean", geom = "bar", position = position_dodge(width = 0.9)) +
   labs(title = "Creatinine Mass at Baseline and Endpoint by Treatment Group",
        x = "Treatment Group",
-       y = "Mean Creatinine Mass") +
+       y = "Mean Creatinine Mass (g/dL)") +
   theme_minimal() +
   scale_fill_manual(values = c("Baseline" = "#1f77b4", "Final" = "#ff7f0e"))
 
