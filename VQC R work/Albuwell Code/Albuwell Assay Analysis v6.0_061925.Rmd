@@ -266,12 +266,6 @@ ggplot(tidy_data_solved_dil2, aes(x = Sample, y = Mean, color = as.character(Dil
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 
-albumin_table <- tidy_data_solved_dil %>%
-  filter(Dilution_calc != "Above") %>%
-  filter(Dilution == "10") %>% 
-  group_by(Sample) %>%
-  summarize(Alb_Concentration = mean(Concentration))
-
 ```
 
 # Add Sample Metadata
@@ -374,7 +368,7 @@ tidy_data <- tidy_df %>%
 
 # filter if Sample is Ladder or Blank
 
-df.Ladder <- tidy_data %>%
+df.Ladder_Cre <- tidy_data %>%
   filter(Sample == "Ladder")
 
 # Subtract Blank and remove the Blank row
@@ -394,7 +388,7 @@ df.Ladder <- tidy_data %>%
   
 # Create a scatter plot of df.Ladder
 
-ggplot(df.Ladder, aes(x = Ladder_Value, y = Value, color = Sample)) +
+ggplot(df.Ladder_Cre, aes(x = Ladder_Value, y = Value, color = Sample)) +
   geom_point() +
   theme_minimal() +
   labs(title = "Ladder",
@@ -404,10 +398,10 @@ ggplot(df.Ladder, aes(x = Ladder_Value, y = Value, color = Sample)) +
 
 # curve fit the data using a natural log
 
-x <- df.Ladder$Ladder_Value
-y <- df.Ladder$Value
+x <- df.Ladder_Cre$Ladder_Value
+y <- df.Ladder_Cre$Value
 
-fit <- lm(Value ~ Ladder_Value, data = df.Ladder)
+fit <- lm(Value ~ Ladder_Value, data = df.Ladder_Cre)
 
 # Print summary of the non-linear regression
 summary(fit)
@@ -557,6 +551,12 @@ ggplot(tidy_data_solved_dil_meta, aes(x = Treatment, y = Creatinine_Mass, fill =
 # Calculate ACR
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=10, fig.height=5}
+
+albumin_table <- tidy_data_solved_dil %>%
+  filter(Dilution_calc != "Above") %>%
+  filter(Dilution == "10") %>% 
+  group_by(Sample) %>%
+  summarize(Alb_Concentration = mean(Concentration))
 
 df.ACR <- merge(creatinine_table, albumin_table, by = "Sample")
 
