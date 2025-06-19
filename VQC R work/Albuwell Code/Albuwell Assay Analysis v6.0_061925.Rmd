@@ -101,7 +101,7 @@ tidy_df <- clean_df %>%
 
 ![](`r here::here("Images", "Tutorial 3.png")`)
 
-# Load Sample Info and Merge the data
+#1. Load Sample Info and Merge the data
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
@@ -114,9 +114,8 @@ tidy_data <- tidy_df %>%
 
 ```
 
-# Graph the Ladder
-
-## Graph ladder and calculate the curve fit
+##a. Graph the Ladder
+### Graph ladder and calculate the curve fit
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
@@ -186,7 +185,7 @@ print(p)
 
 ```
 
-# Calcuate back the latter values based on the fit equation
+##b.Calcuate back the latter values based on the fit equation
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
@@ -214,7 +213,7 @@ ggplot(df_test, aes(x = Ladder_Value, y = Solved, color = as.character(Ladder_Va
 
 ```
 
-# Graph the sample data on the solved curve split by dilution factor
+##c. Graph the sample data on the solved curve split by dilution factor
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
@@ -225,8 +224,13 @@ df_sample_test <- tidy_data_solved %>%
 
 df_sample_test
 
-p + geom_point(data = df_sample_test, aes(x = Solved, y = Value2, color = as.character(Dilution)), size = 3) +
-  labs(color = "Dilution")  # Change the legend title to "Dilution"
+p + 
+  geom_point(
+    data = df_sample_test %>% filter(!is.na(Solved), !is.na(Value2), !is.na(Dilution)),
+    aes(x = Solved, y = Value2, color = as.character(Dilution)),
+    size = 3
+  ) +
+  labs(color = "Dilution")
 
 # If Dilution is greater than 10 then write (Above), if the not write OK
 df_sample_test <- df_sample_test %>%
@@ -235,7 +239,7 @@ df_sample_test <- df_sample_test %>%
 
 ```
 
-# Calculate with Dilution Factor
+##d. Calculate with Dilution Factor
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.width=15, fig.height=5}
 
@@ -266,13 +270,13 @@ ggplot(tidy_data_solved_dil2, aes(x = Sample, y = Mean, color = as.character(Dil
        color = "Dilution")
 
 ```
-
-
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.width=15, fig.height=5}
+df.meta <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Long_PFAS_Metadata.xlsx"), colNames = F, rowNames = T)
+
 tidy_data_solved2 <- tidy_data_solved %>%
   mutate(Dilution_calc = ifelse(Solved > 5, "Above", "OK"))
 
-tidy_data_solved_dil2 <- tidy_data_solved  %>%
+tidy_data_solved_dil2 <- tidy_data_solved2  %>%
   mutate(Concentration = Solved * Dilution)
 
 # create a scatterplot of tidy_data_solved_dil of the Concentration that colors by dilution
@@ -303,14 +307,14 @@ table <- tidy_data_solved_dil2 %>%
 
 table
 
-
+#Create albumin table
 albumin_table <- tidy_data_solved_dil2 %>%
   group_by(Sample, Dilution) %>%   # group by both Sample and Dilution
   summarize(Alb_Concentration = mean(Concentration), .groups = "drop")
 
 ```
 
-# Read in Creatinine Values
+#2. Read in Creatinine Values
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
@@ -365,7 +369,7 @@ tidy_df <- tidy_df %>%
 
 ```
 
-# Load Sample Info and Merge the data
+## Load Sample Info and Merge the data
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
@@ -378,9 +382,9 @@ tidy_data <- tidy_df %>%
 
 ```
 
-# Graph the Ladder
+##a. Graph the Ladder
 
-## Graph ladder and calculate the curve fit for creatinine
+### Graph ladder and calculate the curve fit for creatinine
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
@@ -449,7 +453,7 @@ p
 
 ```
 
-# Calcuate the values from the samples
+##b. Calcuate the values from the samples
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
@@ -499,7 +503,7 @@ df_sample_test <- df_sample_test %>%
 
 ```
 
-# Calculate with Dilution Factor
+##c. Calculate with Dilution Factor
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=15, fig.height=5}
 
@@ -570,7 +574,7 @@ ggplot(tidy_data_solved_dil_meta, aes(x = Treatment, y = Creatinine_Mass, fill =
 
 
 
-# Calculate ACR
+#3. Calculate ACR
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=10, fig.height=5}
 
@@ -586,27 +590,26 @@ df.ACR
 ```
 
 
-#Graph of ACR by group
+##a. Graph of ACR by group
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
-ACR_meta <- tidy_data_solved_dil_meta2 %>%
+ACR_meta <- tidy_data_solved_dil_meta %>%
   left_join(df.ACR, by = c("Sample" = "Sample"))
 
-levels(df.ACR$'Timepoint Cre')
+levels(df.ACR$'Timepoint Treatment')
 
-levels(ACR_meta$'Timepoint Cre')
+levels(ACR_meta$'Timepoint Treatment')
 
 ACR_meta$`Timepoint Cre` <- as.factor(ACR_meta$`Timepoint Cre`)
 
-
-ggplot(ACR_meta, aes(x = `Timepoint Cre`, y = ACR_mg_g, color = as.character(Cre))) +
+ggplot(ACR_meta, aes(x = `Timepoint Cre`, y = ACR_mg_g, color = as.character(Treatment))) +
   geom_point(size = 3) +
   theme_minimal() +
   labs(title = "ACR by Dilution",
-       x = "Timepoint Cre",
+       x = "Timepoint Treatment",
        y = "ACR",
-       color = "Dilution")
+       color = "Treatment")
 
 
 ```
