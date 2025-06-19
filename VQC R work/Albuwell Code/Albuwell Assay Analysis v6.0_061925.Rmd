@@ -415,22 +415,6 @@ tidy_data <- tidy_df %>%
 df.Ladder_Cre <- tidy_data %>%
   filter(Sample == "Ladder")
 
-# Subtract Blank and remove the Blank row
-
-#df.Ladder2 <- df.Ladder %>%
-#    mutate(Value2 = ifelse(Sample != "Blank", Value - filter(df.Ladder, Sample == "Blank")$Value, NA)) %>%
-#    filter(!is.na(Value2))
-
-# remove row 6
-
-#df.Ladder <- df.Ladder[-6,]
-
-#df.Ladder2 <- df.Ladder %>%
-#  group_by(Ladder_Value, Sample) %>%
-#    summarize(Value2 = mean(Value)) %>%
-#    na.omit(Value2)
-  
-# Create a scatter plot of df.Ladder
 
 ggplot(df.Ladder_Cre, aes(x = Ladder_Value, y = Value, color = Sample)) +
   geom_point() +
