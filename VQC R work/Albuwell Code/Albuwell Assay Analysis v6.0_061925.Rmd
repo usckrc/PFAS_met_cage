@@ -302,9 +302,9 @@ mutate(Alb = Mean * UV)
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
-df_creatinine <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Creatinine052125.xlsx"))
+df_creatinine <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Creatinine061825.xlsx"))
 
-subset_pre <- df_creatinine[9:15, 1:9]
+subset_pre <- df_creatinine[19:25, 2:10]
 
 # rename the columns to 1-12
 colnames(subset_pre) <- c("Row", 1:8)
@@ -359,7 +359,7 @@ tidy_df <- tidy_df %>%
 
 # Load Sample Info
 
-df.Sample <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Creatinine_Sample_052025.xlsx"))
+df.Sample <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Creatinine_Sample_061825.xlsx"))
 
 tidy_data <- tidy_df %>%
   left_join(df.Sample, by = c("Cell" = "Cell")) 
@@ -523,7 +523,7 @@ table <- tidy_data_solved_dil %>%
 table
 
 creatinine_table <- tidy_data_solved_dil %>%
-  filter(Dilution == "20") %>% 
+  filter(Dilution == "5") %>% 
   group_by(Sample) %>%
   summarize(Cre_Concentration = mean(Concentration))
 
