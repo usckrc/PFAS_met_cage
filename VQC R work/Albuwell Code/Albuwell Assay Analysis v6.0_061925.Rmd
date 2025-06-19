@@ -235,7 +235,8 @@ p + geom_point(data = df_sample_test, aes(x = Solved, y = Value2, color = as.cha
 tidy_data_solved_dil <- tidy_data_solved  %>%
   mutate(Concentration = Solved * Dilution)
 
-# createa  scatterplot of tidy_data_solved_dil of the Concentration that colors by dilution
+
+# create a  scatterplot of tidy_data_solved_dil of the Concentration that colors by dilution
 
 ggplot(tidy_data_solved_dil, aes(x = Sample, y = Concentration, color = as.character(Replicate))) +
   geom_point(size = 3) +
@@ -253,6 +254,9 @@ ggplot(tidy_data_solved_dil, aes(x = Sample, y = Concentration, color = as.chara
 tidy_data_solved_dil2 <- tidy_data_solved_dil %>%
   group_by(Sample) %>%
   mutate(Mean = mean(Concentration, na.rm = TRUE))
+
+tidy_data_solved_dil2$ID <- as.character(tidy_data_solved_dil2$ID)
+
 
 ggplot(tidy_data_solved_dil2, aes(x = Sample, y = Mean, color = as.character(Dilution))) +
   geom_point(size = 3) +
@@ -281,7 +285,7 @@ as.data.frame()
 df.meta2$UV <- as.numeric(df.meta2$UV)
 
 tidy_data_solved_dil_meta <- tidy_data_solved_dil2 %>%
-left_join(df.meta2, by = c("Sample" = "ID"))
+  left_join(df.meta2, by = c("Sample" = "ID"))
 
 tidy_data_solved_dil_meta2 <- tidy_data_solved_dil_meta  %>%
 filter(!is.na(Concentration)) %>%
@@ -522,6 +526,10 @@ creatinine_table <- tidy_data_solved_dil %>%
   summarize(Cre_Concentration = mean(Concentration))
 
 
+```
+
+
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=15, fig.height=5}
 #convert grams to dL for urine
 tidy_data_solved_dil_meta$Urine_dL <- tidy_data_solved_dil_meta$UV * 0.01
   
