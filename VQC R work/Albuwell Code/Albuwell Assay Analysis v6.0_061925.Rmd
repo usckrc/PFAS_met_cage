@@ -219,12 +219,19 @@ ggplot(df_test, aes(x = Ladder_Value, y = Solved, color = as.character(Ladder_Va
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
 df_sample_test <- tidy_data_solved %>%
-  filter(Type == "Sample")
+  filter(Sample != "Blank" | Sample != "Ladder"| Sample != "Max")
+
+# filter tidy_data_solved to not include Blank, Max, or Ladder in the Sample column
 
 df_sample_test
 
 p + geom_point(data = df_sample_test, aes(x = Solved, y = Value2, color = as.character(Dilution)), size = 3) +
   labs(color = "Dilution")  # Change the legend title to "Dilution"
+
+# If Dilution is greater than 10 then write (Above), if the not write OK
+df_sample_test <- df_sample_test %>%
+  mutate(Dilution_calc = ifelse(Solved > 10, "Above", "OK"))
+
 
 ```
 
@@ -237,62 +244,67 @@ tidy_data_solved_dil <- tidy_data_solved  %>%
 
 
 # create a  scatterplot of tidy_data_solved_dil of the Concentration that colors by dilution
-
 ggplot(tidy_data_solved_dil, aes(x = Sample, y = Concentration, color = as.character(Replicate))) +
   geom_point(size = 3) +
-  theme_minimal() +
-  labs(
-    title = "Concentration of Albumin by Dilution",
-    x = "Dilution",  # Change if "Sample" is not "Cell"
-    y = "Concentration (µg/mL)", 
-    color = "Replicate"
-  ) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  labs(title = "Concentration of Albumin by Dilution",
+       x = "Cell",
+       y = "Concentration",
+       color = "Duplicate")
 
 # create a new column that measures the mean of the values for each sample
-
 tidy_data_solved_dil2 <- tidy_data_solved_dil %>%
   group_by(Sample) %>%
   mutate(Mean = mean(Concentration, na.rm = TRUE))
 
-tidy_data_solved_dil2$ID <- as.character(tidy_data_solved_dil2$ID)
-
-
 ggplot(tidy_data_solved_dil2, aes(x = Sample, y = Mean, color = as.character(Dilution))) +
   geom_point(size = 3) +
-  theme_minimal() +
-  labs(
-    title = "Concentration of Albumin by Dilution",
-    x = "Dilution",  # Or "Sample", based on context
-    y = "Mean Albumin Concentration (µg/mL)",  
-    color = "Dilution"
-  ) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  labs(title = "Concentration of Albumin by Dilution",
+       x = "Cell",
+       y = "Concentration",
+       color = "Dilution")
 
 ```
 
-# Add Sample Metadata
 
-```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.width=15, fig.height=5}
+tidy_data_solved2 <- tidy_data_solved %>%
+  mutate(Dilution_calc = ifelse(Solved > 5, "Above", "OK"))
 
-df.meta <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Long_PFAS_Metadata.xlsx"), colNames = F, rowNames = T)
+tidy_data_solved_dil2 <- tidy_data_solved  %>%
+  mutate(Concentration = Solved * Dilution)
 
-df.meta2 <- df.meta %>%
-t() %>%
-as.data.frame() 
+# create a scatterplot of tidy_data_solved_dil of the Concentration that colors by dilution
 
-df.meta2$UV <- as.numeric(df.meta2$UV)
+ggplot(tidy_data_solved_dil2, aes(x = Sample, y = Concentration, color = as.character(Dilution))) +
+  geom_point() +
+  theme_minimal() +
+  labs(title = "Concentration of Albumin by Dilution",
+       x = "Cell",
+       y = "Concentration",
+       color = "Dilution")
 
-tidy_data_solved_dil_meta <- tidy_data_solved_dil2 %>%
-  left_join(df.meta2, by = c("Sample" = "ID"))
+ggplot(tidy_data_solved_dil2, aes(x = Sample, y = Concentration, color = Dilution_calc)) +
+  geom_point() +
+  theme_minimal() +
+  labs(title = "Concentration of Albumin by Dilution",
+       x = "Cell",
+       y = "Concentration",
+       color = "Dilution")
 
-tidy_data_solved_dil_meta2 <- tidy_data_solved_dil_meta  %>%
-filter(!is.na(Concentration)) %>%
-mutate(Alb = Mean * UV)
+
+table <- tidy_data_solved_dil2 %>%
+  filter(Type == "Sample") %>%
+  group_by(Dilution, Dilution_calc) %>%
+  summarize(count = n())
+
+table
 
 
-
+albumin_table <- tidy_data_solved_dil2 %>%
+  group_by(Sample, Dilution) %>%   # group by both Sample and Dilution
+  summarize(Alb_Concentration = mean(Concentration), .groups = "drop")
 
 ```
 
@@ -492,13 +504,13 @@ df_sample_test <- df_sample_test %>%
 tidy_data_solved <- tidy_data_solved %>%
   mutate(Dilution_calc = ifelse(Solved < 1, "Below", "OK"))
 
-tidy_data_solved_dil <- tidy_data_solved  %>%
+tidy_data_solved_dil3 <- tidy_data_solved  %>%
   mutate(Concentration = Solved * Dilution) %>%
   filter(!is.na(Concentration))
 
 # create a  scatterplot of tidy_data_solved_dil of the Concentration that colors by dilution
 
-ggplot(tidy_data_solved_dil, aes(x = Sample, y = Concentration, color = as.character(Dilution))) +
+ggplot(tidy_data_solved_dil3, aes(x = Sample, y = Concentration, color = as.character(Dilution))) +
   geom_point() +
   theme_minimal() +
   labs(title = "Concentration of Creatinine by Dilution",
@@ -506,7 +518,7 @@ ggplot(tidy_data_solved_dil, aes(x = Sample, y = Concentration, color = as.chara
        y = "Concentration",
        color = "Dilution")
 
-ggplot(tidy_data_solved_dil, aes(x = Sample, y = Concentration, color = Dilution_calc)) +
+ggplot(tidy_data_solved_dil3, aes(x = Sample, y = Concentration, color = Dilution_calc)) +
   geom_point() +
   theme_minimal() +
   labs(title = "Concentration of Creatinine by Dilution",
@@ -514,13 +526,13 @@ ggplot(tidy_data_solved_dil, aes(x = Sample, y = Concentration, color = Dilution
        y = "Concentration",
        color = "Dilution")
 
-table <- tidy_data_solved_dil %>%
+table <- tidy_data_solved_dil3 %>%
   group_by(Dilution, Dilution_calc) %>%
   summarize(count = n())
 
 table
 
-creatinine_table <- tidy_data_solved_dil %>%
+creatinine_table <- tidy_data_solved_dil3 %>%
   filter(Dilution == "5") %>% 
   group_by(Sample) %>%
   summarize(Cre_Concentration = mean(Concentration))
@@ -559,12 +571,6 @@ ggplot(tidy_data_solved_dil_meta, aes(x = Treatment, y = Creatinine_Mass, fill =
 # Calculate ACR
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=10, fig.height=5}
-
-albumin_table <- tidy_data_solved_dil %>%
-  filter(Dilution_calc != "Above") %>%
-  filter(Dilution == "10") %>% 
-  group_by(Sample) %>%
-  summarize(Alb_Concentration = mean(Concentration))
 
 df.ACR <- merge(creatinine_table, albumin_table, by = "Sample")
 
