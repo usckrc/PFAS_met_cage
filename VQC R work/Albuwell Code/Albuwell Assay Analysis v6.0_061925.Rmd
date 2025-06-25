@@ -52,7 +52,6 @@ here()
 
 ## View in Excel vs. View in R
 
-![](`r here::here("Images", "Tutorial 1.png")`)
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
@@ -66,7 +65,6 @@ subset_df <- test[9:16, 1:9]
 
 ## The subset of the data looks like this
 
-![](`r here::here("Images", "Tutorial 2.png")`)
 
 ## Next we will rename the columns to 1-12 and pivot the data to long format
 
@@ -99,9 +97,8 @@ tidy_df <- clean_df %>%
 
 ## This is what the tidy data looks like
 
-![](`r here::here("Images", "Tutorial 3.png")`)
 
-#1. Load Sample Info and Merge the data
+# 1. Load Sample Info and Merge the data
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
@@ -270,7 +267,7 @@ ggplot(tidy_data_solved_dil2, aes(x = Sample, y = Mean, color = as.character(Dil
 ```
 
 
-#2. Add Sample Metadata
+# 2. Add Sample Metadata
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
@@ -336,7 +333,7 @@ table
 
 ```
 
-#3. Read in Creatinine Values
+# 3. Read in Creatinine Values
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
@@ -582,7 +579,7 @@ ggplot(tidy_data_solved_dil_meta, aes(x = Treatment, y = Creatinine_Mass, fill =
 
 
 
-#4. Calculate ACR
+# 4. Calculate ACR
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=10, fig.height=5}
 
