@@ -20,7 +20,14 @@ editor_options:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  error = FALSE,
+  fig.align = 'center'
+)
 ```
 
 ```{r packages, echo=T, error=FALSE, message=FALSE, warning=FALSE}
@@ -43,7 +50,7 @@ here()
 ```
 
 
-# 1. Body Weight
+# Body Weight
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
 
 #Load Data
@@ -52,6 +59,7 @@ PFAS_meta <- read.xlsx(here("VQC R work", "Data Sheets", "PFAS_Sample_Meta.xlsx"
 ```
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
+
 PFAS_BW_plot <- PFAS_BW %>%
   pivot_longer(
     cols = -X1,
@@ -147,7 +155,7 @@ ggplot(data = PFAS_BW_plot_5, aes(x = Drug, y = Normalized, color = Drug)) +
 ```
 
 
-# 2. Food
+# Food
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
 #Load Data
 PFAS_food <- read.xlsx(here("VQC R work", "Data Sheets","PFAS_Rdata_Food.xlsx"))
@@ -155,6 +163,7 @@ PFAS_meta <- read.xlsx(here("VQC R work", "Data Sheets", "PFAS_Sample_Meta.xlsx"
 ```
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
+
 PFAS_food_plot <- PFAS_food %>%
   pivot_longer(
     cols = -X1,
@@ -230,8 +239,9 @@ ggplot(data = PFAS_food_plot_5, aes(x = Drug, y = Normalized, color = Drug)) +
 ```
 
 
-# 3. Urine Volume
+# Urine Volume
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
+
 #Load Data
 PFAS_UrineVolume <- read.xlsx(here("VQC R work", "Data Sheets","PFAS_Rdata_UrineVolume.xlsx"),detectDates = TRUE)
 PFAS_meta <- read.xlsx(here("VQC R work", "Data Sheets", "PFAS_Sample_Meta.xlsx"))
@@ -330,7 +340,7 @@ ggplot(data = PFAS_UrineVolume_5, aes(x = Drug, y = Normalized, color = Drug)) +
 ```
 
 
-# 4. Water Consumption
+# Water Consumption
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
 #Load Data
 PFAS_food <- read.xlsx(here("VQC R work", "Data Sheets","PFAS_Rdata_Water.xlsx"))
@@ -339,6 +349,7 @@ PFAS_meta <- read.xlsx(here("VQC R work", "Data Sheets", "PFAS_Sample_Meta.xlsx"
 ```
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
+
 PFAS_water_plot <- PFAS_food %>%
   pivot_longer(
     cols = -X1,
@@ -414,8 +425,9 @@ ggplot(data = PFAS_food_plot_5, aes(x = Drug, y = Normalized, color = Drug)) +
 ```
 
 
-# 5. Tissue Measurements
-## HW/BW + HW/BW
+# Tissue Measurements
+
+## KW/BW (Final) + KW/BW (Initial) + HW/BW (Final) + HW/BW (Initial)
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
 #Load Data
 PFAS_Tissue <- read.xlsx(here("VQC R work", "Data Sheets","PFAS_Rdata_Tissue.xlsx"))
@@ -425,6 +437,7 @@ PFAS_meta <- read.xlsx(here("VQC R work", "Data Sheets", "PFAS_Sample_Meta.xlsx"
 
 ```{r echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
 
+#Kidney Weight to Body Weight
 PFAS_meta$ID <- as.character(PFAS_meta$ID)
 PFAS_Tissue$ID <- as.character(PFAS_Tissue$ID)
 
@@ -435,7 +448,7 @@ PFAS_Tissue_2$Drug <- factor(PFAS_Tissue_2$Drug, levels = c("Vehicle", "PFAS_1mg
 ggplot(data = PFAS_Tissue_2, aes(x = Drug, y = KW_BW, color = Drug)) + 
   geom_point(size = 3) +
   theme_classic() +
-  labs(x = "Drug", y = "KW/BW (mg/g)", title = "Kidney Weight to Body Weight Ratio") +
+  labs(x = "Drug", y = "KW/BW (mg/g)", title = "Kidney Weight to Final Body Weight Ratio") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  # Rotate x-axis labels for better visibility
     theme(
     axis.title.x = element_text(size = 14),  # Increase x-axis title size
@@ -445,10 +458,40 @@ ggplot(data = PFAS_Tissue_2, aes(x = Drug, y = KW_BW, color = Drug)) +
     plot.title = element_text(size = 16, hjust = 0.5)       # Increase plot title size
   )
 
+#Kidney Weight to Initial Body Weight
+ggplot(data = PFAS_Tissue_2, aes(x = Drug, y = KW_BW_In, color = Drug)) + 
+  geom_point(size = 3) +
+  theme_classic() +
+  labs(x = "Drug", y = "KW/BW (mg/g)", title = "Kidney Weight to Initial Body Weight Ratio") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  # Rotate x-axis labels for better visibility
+    theme(
+    axis.title.x = element_text(size = 14),  # Increase x-axis title size
+    axis.title.y = element_text(size = 14),  # Increase y-axis title size
+    axis.text.x = element_text(size = 12, angle = 0, hjust = .5),    # Increase x-axis text size
+    axis.text.y = element_text(size = 12),    # Increase y-axis text size
+    plot.title = element_text(size = 16, hjust = 0.5)       # Increase plot title size
+  )
+
+#Heart Weight to Final Body Weight
 ggplot(data = PFAS_Tissue_2, aes(x = Drug, y = HW_BW, color = Drug)) + 
   geom_point(size = 3) +
   theme_classic() +
-  labs(x = "Drug", y = "HW/BW (mg/g)", title = "Heart Weight to Body Weight Ratio") +
+  labs(x = "Drug", y = "HW/BW (mg/g)", title = "Heart Weight to Final Body Weight Ratio") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  # Rotate x-axis labels for better visibility
+    theme(
+    axis.title.x = element_text(size = 14),  # Increase x-axis title size
+    axis.title.y = element_text(size = 14),  # Increase y-axis title size
+    axis.text.x = element_text(size = 12, angle = 0, hjust = .5),    # Increase x-axis text size
+    axis.text.y = element_text(size = 12),    # Increase y-axis text size
+    plot.title = element_text(size = 16, hjust = 0.5)       # Increase plot title size
+  )
+
+
+#Heart Weight to Initial Body Weight
+ggplot(data = PFAS_Tissue_2, aes(x = Drug, y = HW_BW_In, color = Drug)) + 
+  geom_point(size = 3) +
+  theme_classic() +
+  labs(x = "Drug", y = "HW/BW (mg/g)", title = "Heart Weight to Initial Body Weight Ratio") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  # Rotate x-axis labels for better visibility
     theme(
     axis.title.x = element_text(size = 14),  # Increase x-axis title size
@@ -492,7 +535,7 @@ ggplot(data = PFAS_Tissue_2, aes(x = Drug, y = Heart_Weight.x, color = Drug)) +
 
 ```
 
-# 6. BUN
+# BUN
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
 
 PFAS_BUN <- read.xlsx(here("VQC R work", "Data Sheets","PFAS_Rdata_BUN.xlsx"))
@@ -530,7 +573,7 @@ ttest <- t.test(test$Vehicle, test$PFAS_1mg, var.equal = TRUE)
 ttest2 <- t.test(test$Vehicle, test$PFAS_10mg, var.equal = TRUE)
 
 ttest
-ttest2 
+ttest2
 
 ttest_summary <- data.frame(
   Test = c("PFAS_1mg vs Vehicle", "PFAS_10mg vs Vehicle"),
@@ -543,9 +586,12 @@ ttest_summary <- data.frame(
 
 ```
 
-# 7. Na
+# Na
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
-ggplot(data = PFAS_meta, aes(x = Drug, y = Na, color = Drug)) + 
+
+PFAS_Tissue_2$Drug <- factor(PFAS_Tissue_2$Drug, levels = c("Vehicle", "PFAS_1mg", "PFAS_10mg"))
+
+ggplot(data = PFAS_Tissue_2, aes(x = Drug, y = Na, color = Drug)) + 
   geom_point(size = 3) +
   theme_classic() +
   labs(x = "Drug", y = "Na+ (mmol/L)", title = "Na+ levels") +
@@ -565,9 +611,10 @@ summary(anova_Na)
 
 ```
 
-# 8. K
+# K
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
-ggplot(data = PFAS_meta, aes(x = Drug, y = K, color = Drug)) + 
+
+ggplot(data = PFAS_Tissue_2, aes(x = Drug, y = K, color = Drug)) + 
   geom_point(size = 3) +
   theme_classic() +
   labs(x = "Drug", y = "K+ (mmol/L)", title = "K+ levels") +
@@ -584,12 +631,12 @@ test <- split(PFAS_meta$K, PFAS_meta$Drug)
 
 anova_K <- aov(PFAS_meta$K ~ PFAS_meta$Drug, data = test)
 summary(anova_K)
-
 ```
 
-# 9. Cl
+# Cl
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
-ggplot(data = PFAS_meta, aes(x = Drug, y = Cl, color = Drug)) + 
+
+ggplot(data = PFAS_Tissue_2, aes(x = Drug, y = Cl, color = Drug)) + 
   geom_point(size = 3) +
   theme_classic() +
   labs(x = "Drug", y = "Cl- (mmol/L)", title = "Cl- levels") +
@@ -609,9 +656,11 @@ summary(anova_Cl)
 
 ```
 
-# 10. iCa
+
+# iCa
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
-ggplot(data = PFAS_meta, aes(x = Drug, y = iCa, color = Drug)) + 
+
+ggplot(data = PFAS_Tissue_2, aes(x = Drug, y = iCa, color = Drug)) + 
   geom_point(size = 3) +
   theme_classic() +
   labs(x = "Drug", y = "iCa (mmol/L)", title = "iCa levels") +
@@ -631,9 +680,10 @@ summary(anova_iCa)
 
 ```
 
-# 11. TCO2
+# TCO2
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
-ggplot(data = PFAS_meta, aes(x = Drug, y = TCO2, color = Drug)) + 
+
+ggplot(data = PFAS_Tissue_2, aes(x = Drug, y = TCO2, color = Drug)) + 
   geom_point(size = 3) +
   theme_classic() +
   labs(x = "Drug", y = "TCO2 (mmol/L)", title = "TCO2 levels") +
@@ -652,9 +702,11 @@ anova_TCO2 <- aov(PFAS_meta$TCO2 ~ PFAS_meta$Drug, data = test)
 summary(anova_TCO2)
 
 ```
-# 12. Glucose
+
+# Glucose
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
-ggplot(data = PFAS_meta, aes(x = Drug, y = Glu, color = Drug)) + 
+
+ggplot(data = PFAS_Tissue_2, aes(x = Drug, y = Glu, color = Drug)) + 
   geom_point(size = 3) +
   theme_classic() +
   labs(x = "Drug", y = "Glu (mg/dL)", title = "Glucose levels") +
@@ -674,9 +726,10 @@ summary(anova_Glu)
 
 ```
 
-# 13. HCT
+# HCT
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
-ggplot(data = PFAS_meta, aes(x = Drug, y = Hct, color = Drug)) + 
+
+ggplot(data = PFAS_Tissue_2, aes(x = Drug, y = Hct, color = Drug)) + 
   geom_point(size = 3) +
   theme_classic() +
   labs(x = "Drug", y = "Hct (%)", title = "HCT levels") +
@@ -695,9 +748,11 @@ anova_Hct <- aov(PFAS_meta$Hct ~ PFAS_meta$Drug, data = test)
 summary(anova_Hct)
 
 ```
-# 14. Hb
+
+# Hb
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
-ggplot(data = PFAS_meta, aes(x = Drug, y = Hb, color = Drug)) + 
+
+ggplot(data = PFAS_Tissue_2, aes(x = Drug, y = Hb, color = Drug)) + 
   geom_point(size = 3) +
   theme_classic() +
   labs(x = "Drug", y = "Hb (g/dL)", title = "Hb levels") +
@@ -719,7 +774,7 @@ summary(anova_Hb)
 
 # Session Info
 
-```{r echo`=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
+```{r echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.align = 'center'}
 
 sessionInfo()
 
