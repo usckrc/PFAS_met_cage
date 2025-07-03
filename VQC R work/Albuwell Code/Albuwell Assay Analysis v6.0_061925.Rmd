@@ -565,15 +565,18 @@ tidy_data_solved_dil_meta$Treatment <- factor(tidy_data_solved_dil_meta$Treatmen
   levels = c("Vehicle", "1 mg", "10 mg")
 )
 
-#Bar graph for Creatinine Mass
-ggplot(tidy_data_solved_dil_meta, aes(x = Treatment, y = Creatinine_Mass, fill = Timepoint)) +
-  stat_summary(fun = "mean", geom = "bar", position = position_dodge(width = 0.9)) +
+#Dot plot for Creatinine Mass
+tidy_data_solved_dil_meta$`Timepoint Treatment` <- factor(tidy_data_solved_dil_meta$`Timepoint Treatment`,
+  levels = c("Baseline Vehicle", "Final Vehicle", "Baseline 1mg", "Final 1mg", "Baseline 10mg", "Final 10mg")
+)
+
+ggplot(tidy_data_solved_dil_meta, aes(x = `Timepoint Treatment`, y = Creatinine_Mass, color = Timepoint)) +
+  geom_point(size = 3) +
   labs(title = "Creatinine Mass at Baseline and Endpoint by Treatment Group",
        x = "Treatment Group",
-       y = "Mean Creatinine Mass (g/dL)") +
-  theme_minimal() +
-  scale_fill_manual(values = c("Baseline" = "#1f77b4", "Final" = "#ff7f0e"))
-
+       y = "Creatinine Mass (g/dL)",
+       color = "Treatment")
+  
 
 ```
 
@@ -610,6 +613,10 @@ levels(ACR_meta$'Timepoint Treatment')
 
 ACR_meta$`Timepoint Treatment` <- as.factor(ACR_meta$`Timepoint Treatment`)
 
+ACR_meta$`Timepoint Treatment` <- factor(ACR_meta$`Timepoint Treatment`,
+  levels = c("Baseline Vehicle", "Final Vehicle", "Baseline 1mg", "Final 1mg", "Baseline 10mg", "Final 10mg")
+)
+
 ggplot(ACR_meta, aes(x = `Timepoint Treatment`, y = ACR_mg_g, color = as.character(Treatment))) +
   geom_point(size = 3) +
   theme_minimal() +
@@ -631,18 +638,6 @@ sessionInfo()
 
 
 
-
-
-
-
-
-# Session Info
-
-```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
-
-sessionInfo()
-
-```
 
 
   
