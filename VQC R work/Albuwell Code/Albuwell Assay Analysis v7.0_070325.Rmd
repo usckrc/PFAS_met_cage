@@ -836,7 +836,7 @@ as.data.frame()
 df.meta2_week$UV <- as.numeric(df.meta2_week$UV)
 
 tidy_data_solved_dil_meta_week <- tidy_data_solved_dil2_week %>%
-  left_join(df.meta2, by = c("Sample"))
+  left_join(df.meta2_week, by = c("Sample"))
 
 tidy_data_solved_dil_meta2_week <- tidy_data_solved_dil_meta_week  %>%
 filter(!is.na(Concentration)) %>%
@@ -1001,6 +1001,24 @@ ggplot(df_test_week, aes(x = Ladder_Value, y = Solved, color = as.character(Ladd
 
 ```
 
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
+
+df_sample_test_week <- tidy_data_solved_week %>%
+  filter(Sample != "Blank" | Sample != "Ladder"| Sample != "Max")
+
+# filter tidy_data_solved to not include Blank, Max, or Ladder in the Sample column
+
+df_sample_test_week
+
+p + geom_point(data = df_sample_test_week, aes(x = Solved, y = Value), color = as.character(df_sample_test_week$Dilution), size = 3)
+
+# If Dilution is greater than 10 then write (Above), if the not write OK
+
+df_sample_test_week <- df_sample_test_week %>%
+  mutate(Dilution_calc = ifelse(Solved < 1, "Below", "OK"))
+
+```
+
 ##c. Calculate with Dilution Factor
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=15, fig.height=5}
@@ -1047,7 +1065,7 @@ creatinine_table_week <- tidy_data_solved_dil3_week %>%
 
 
 
-# 7. Calculate ACR (Week)
+# 8. Calculate ACR (Week)
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=10, fig.height=5}
 
 df.meta_week <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Long_PFAS_Metadata_Week.xlsx"), colNames = F, rowNames = T)
@@ -1077,18 +1095,19 @@ levels(ACR_meta_week$'Timepoint Treatment')
 ACR_meta_week$`Timepoint Treatment` <- as.factor(ACR_meta_week$`Timepoint Treatment`)
 
 ACR_meta_week$`Timepoint Treatment` <- factor(ACR_meta_week$`Timepoint Treatment`,
-  levels = c("Baseline Vehicle", "Final Vehicle", "Baseline 1mg", "Final 1mg", "Baseline 10mg", "Final 10mg")
+  levels = c("Week 0 1 mg", "Week 1 1 mg", "Week 2 1 mg", "Week 3 1 mg", "Week 4 1 mg", "Week 0 10 mg", "Week 1 10 mg", "Week 2 10 mg", "Week 3 10 mg")
 )
 
-ggplot(ACR_meta_week, aes(x = `Timepoint Treatment`, y = ACR_mg_g, color = as.character(Treatment))) +
+ggplot(ACR_meta_week, aes(x = `Timepoint Treatment`, y = ACR_mg_g, color = Treatment)) +
   geom_point(size = 3) +
-  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
   labs(title = "ACR by Treatment",
        x = "Timepoint Treatment",
        y = "ACR",
        color = "Treatment")
-
-
+  
+  
+  
 ```
 
 
