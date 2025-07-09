@@ -111,7 +111,7 @@ tidy_data <- tidy_df %>%
 
 ```
 
-##a. Graph the Ladder
+## a. Graph the Ladder
 
 ## Graph ladder and calculate the curve fit
 
@@ -400,7 +400,7 @@ tidy_data <- tidy_df %>%
 
 ```
 
-##a. Graph the Ladder
+## a. Graph the Ladder
 
 ### Graph ladder and calculate the curve fit for creatinine
 
@@ -455,7 +455,7 @@ p
 
 ```
 
-##b. Calcuate the values from the samples
+## b. Calcuate the values from the samples
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
@@ -505,7 +505,7 @@ df_sample_test <- df_sample_test %>%
 
 ```
 
-##c. Calculate with Dilution Factor
+## c. Calculate with Dilution Factor
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=15, fig.height=5}
 
@@ -599,7 +599,7 @@ df.ACR
 ```
 
 
-##a. Graph of ACR by group
+## a. Graph of ACR by group
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
@@ -623,9 +623,10 @@ ggplot(ACR_meta, aes(x = `Timepoint Treatment`, y = ACR_mg_g, color = as.charact
        x = "Timepoint Treatment",
        y = "ACR",
        color = "Treatment")
-
-
 ```
+
+
+
 # 5. Load Sample Info and Merge the data (Week)
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
@@ -669,7 +670,7 @@ tidy_data_week <- tidy_df_week %>%
 ```
 
 
-##a. Graph the Ladder
+## a. Graph the Ladder
 
 ## Graph ladder and calculate the curve fit
 
@@ -915,7 +916,7 @@ tidy_data_week <- tidy_df_week %>%
 
 ```
 
-##a. Graph the Ladder
+## a. Graph the Ladder
 
 ### Graph ladder and calculate the curve fit for creatinine
 
@@ -970,7 +971,7 @@ p
 
 ```
 
-##b. Calcuate the values from the samples
+## b. Calcuate the values from the samples
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
 # Subtract Blank and calculate the values
@@ -1019,7 +1020,7 @@ df_sample_test_week <- df_sample_test_week %>%
 
 ```
 
-##c. Calculate with Dilution Factor
+## c. Calculate with Dilution Factor
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=15, fig.height=5}
 
@@ -1081,7 +1082,7 @@ df.ACR_week
 
 ```
 
-##a. Graph of ACR by group
+## a. Graph of ACR by group
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
