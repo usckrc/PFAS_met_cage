@@ -98,18 +98,48 @@ tidy_df <- clean_df %>%
 ## This is what the tidy data looks like
 
 
-# 1. Load Sample Info and Merge the data
+# 1. Load Sample Info and Merge the data (Week)
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
-# Load Sample Info
+test_week <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Albuwell_Week_070325.xlsx"))
 
-df.Sample <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Long_PFAS_Albuwell_Sample_061225.xlsx"))
+# isolate to plate
+subset_df_week <- test_week[9:16, 1:12]
 
-tidy_data <- tidy_df %>%
-  left_join(df.Sample, by = c("Cell" = "Cell")) 
+# rename the columns to 1-11
+colnames(subset_df_week) <- c("Row", 1:11)
 
 ```
+
+
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
+subset_df_week %>%
+  mutate(across(-Row, as.numeric)) %>%  # or use as.character if preferred
+  pivot_longer(cols = -Row, names_to = "Column", values_to = "Value")
+
+clean_df_week <- subset_df_week %>%
+  mutate(across(-Row, as.numeric))  # or as.character if needed
+
+
+tidy_df_week <- clean_df_week %>%
+  pivot_longer(cols = -Row,
+               names_to = "Column",
+               values_to = "Value") %>%
+  mutate(Cell = paste0(Row, Column)) %>%
+  select(Cell, Value)
+
+
+```
+```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
+df.Sample_week <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Long_PFAS_Albuwell_Sample_Week_070325.xlsx"))
+
+tidy_data_week <- tidy_df_week %>%
+  left_join(df.Sample_week, by = c("Cell" = "Cell")) 
+
+
+```
+
 
 ## a. Graph the Ladder
 
@@ -119,18 +149,18 @@ tidy_data <- tidy_df %>%
 
 # filter if Sample is Ladder or Blank
 
-df.Ladder <- tidy_data %>%
+df.Ladder_week <- tidy_data_week %>%
   filter(Sample == "Ladder" | Sample == "Blank")
 
 # Subtract Blank and remove the Blank row
 
-df.Ladder2 <- df.Ladder %>%
-    mutate(Value2 = ifelse(Sample != "Blank", Value - filter(df.Ladder, Sample == "Blank")$Value, NA)) %>%
+df.Ladder2_week <- df.Ladder_week %>%
+    mutate(Value2 = ifelse(Sample != "Blank", Value - filter(df.Ladder_week, Sample == "Blank")$Value, NA)) %>%
     filter(!is.na(Value2))
 
 # Create a scatter plot of df.Ladder2
 
-ggplot(df.Ladder2, aes(x = Ladder_Value, y = Value2, color = Sample)) +
+ggplot(df.Ladder2_week, aes(x = Ladder_Value, y = Value2, color = Sample)) +
   geom_point() +
   theme_minimal() +
   labs(title = "Ladder",
@@ -140,8 +170,8 @@ ggplot(df.Ladder2, aes(x = Ladder_Value, y = Value2, color = Sample)) +
 
 # curve fit the data using a natural log
 
-x <- df.Ladder2$Ladder_Value
-y <- df.Ladder2$Value2
+x <- df.Ladder2_week$Ladder_Value
+y <- df.Ladder2_week$Value2
 
 # Fit the non-linear regression model
 fit <- nls(y ~ a + b * log(x), start = list(a = 1, b = 1))
@@ -164,10 +194,10 @@ tss <- sum((y - mean(y))^2)
 r_squared <- 1 - rss/tss
 
 # Create data for plotting
-plot_data <- data.frame(x = x, y = y, Predicted = predicted)
+plot_data_week <- data.frame(x = x, y = y, Predicted = predicted)
 
 # Create the ggplot with scatter plot and fitted line
-p <- ggplot(plot_data, aes(x = x, y = y)) +
+p <- ggplot(plot_data_week, aes(x = x, y = y)) +
   geom_point(color = "darkred", size = 5) +  # Scatter plot of x vs y
   geom_line(aes(y = Predicted), color = "red") +  # Fitted line
   labs(
@@ -189,19 +219,19 @@ print(p)
 
 # Subtract Blank and calculate the values
 
-tidy_data_blank <- tidy_data %>%
-    mutate(Value2 = ifelse(Sample != "Blank", Value - filter(df.Ladder, Sample == "Blank")$Value, NA)) %>%
+tidy_data_blank_week <- tidy_data_week %>%
+    mutate(Value2 = ifelse(Sample != "Blank", Value - filter(df.Ladder_week, Sample == "Blank")$Value, NA)) %>%
     filter(!is.na(Value2))
 
-tidy_data_solved <- tidy_data_blank  %>%
+tidy_data_solved_week <- tidy_data_blank_week  %>%
   mutate(Solved = exp((Value2 - b) / m))
 
-df_test <- tidy_data_solved %>%
+df_test_week <- tidy_data_solved_week %>%
   filter(Sample == "Ladder")
 
 # Create a scatter plot of df_test
 
-ggplot(df_test, aes(x = Ladder_Value, y = Solved, color = as.character(Ladder_Value))) +
+ggplot(df_test_week, aes(x = Ladder_Value, y = Solved, color = as.character(Ladder_Value))) +
   geom_point(size = 5) +
   theme_minimal() +
   labs(title = "Checking Equation Fit Against Ladder",
@@ -215,12 +245,12 @@ ggplot(df_test, aes(x = Ladder_Value, y = Solved, color = as.character(Ladder_Va
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
-df_sample_test <- tidy_data_solved %>%
+df_sample_test_week <- tidy_data_solved_week %>%
   filter(Type == "Sample")
 
-df_sample_test
+df_sample_test_week
 
-p + geom_point(data = df_sample_test, aes(x = Solved, y = Value2, color = as.character(Dilution)), size = 3) +
+p + geom_point(data = df_sample_test_week, aes(x = Solved, y = Value2, color = as.character(Dilution)), size = 3) +
   labs(color = "Dilution")  # Change the legend title to "Dilution"
 
 ```
@@ -229,12 +259,12 @@ p + geom_point(data = df_sample_test, aes(x = Solved, y = Value2, color = as.cha
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.width=15, fig.height=5}
 
-tidy_data_solved_dil <- tidy_data_solved  %>%
+tidy_data_solved_dil_week <- tidy_data_solved_week  %>%
   mutate(Concentration = Solved * Dilution)
 
 # createa  scatterplot of tidy_data_solved_dil of the Concentration that colors by dilution
 
-ggplot(tidy_data_solved_dil, aes(x = Sample, y = Concentration, color = as.character(Replicate))) +
+ggplot(tidy_data_solved_dil_week, aes(x = Sample, y = Concentration, color = as.character(Replicate))) +
   geom_point(size = 3) +
   theme_minimal() +
   labs(
@@ -247,11 +277,11 @@ ggplot(tidy_data_solved_dil, aes(x = Sample, y = Concentration, color = as.chara
 
 # create a new column that measures the mean of the values for each sample
 
-tidy_data_solved_dil2 <- tidy_data_solved_dil %>%
+tidy_data_solved_dil2_week <- tidy_data_solved_dil_week %>%
   group_by(Sample) %>%
   mutate(Mean = mean(Concentration, na.rm = TRUE))
 
-ggplot(tidy_data_solved_dil2, aes(x = Sample, y = Mean, color = as.character(Dilution))) +
+ggplot(tidy_data_solved_dil2_week, aes(x = Sample, y = Mean, color = as.character(Dilution))) +
   geom_point(size = 3) +
   theme_minimal() +
   labs(
@@ -265,88 +295,50 @@ ggplot(tidy_data_solved_dil2, aes(x = Sample, y = Mean, color = as.character(Dil
 
 ```
 
-
-# 2. Add Sample Metadata
+# 2. Add Sample Metadata (Week)
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
-df.meta <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Long_PFAS_Metadata.xlsx"), colNames = F, rowNames = T)
+df.meta_week <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Long_PFAS_Metadata_Week.xlsx"), colNames = F, rowNames = T)
 
-df.meta2 <- df.meta %>%
+df.meta2_week <- df.meta_week %>%
 t() %>%
 as.data.frame() 
 
-df.meta2$UV <- as.numeric(df.meta2$UV)
+df.meta2_week$UV <- as.numeric(df.meta2_week$UV)
 
-tidy_data_solved_dil_meta <- tidy_data_solved_dil2 %>%
-  left_join(df.meta2, by = c("Sample"))
+tidy_data_solved_dil_meta_week <- tidy_data_solved_dil2_week %>%
+  left_join(df.meta2_week, by = c("Sample"))
 
-tidy_data_solved_dil_meta2 <- tidy_data_solved_dil_meta  %>%
+tidy_data_solved_dil_meta2_week <- tidy_data_solved_dil_meta_week  %>%
 filter(!is.na(Concentration)) %>%
 mutate(Alb = Mean * UV)
 
+tidy_data_solved_dil_meta2_week <- tidy_data_solved_dil_meta_week  %>%
+filter(!is.na(Concentration)) %>%
+mutate(UV_dL = UV/100)
+
 #Create albumin table
-albumin_table <- tidy_data_solved_dil2 %>%
+albumin_table_week <- tidy_data_solved_dil_meta2_week %>%
   group_by(Sample, Dilution) %>%   # group by both Sample and Dilution
   summarize(Alb_Concentration = mean(Concentration), .groups = "drop")
 
 ```
 
-
-```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE, fig.width=15, fig.height=5}
-
-tidy_data_solved2 <- tidy_data_solved %>%
-  mutate(Dilution_calc = ifelse(Solved > 5, "Above", "OK"))
-
-tidy_data_solved_dil2 <- tidy_data_solved2  %>%
-  mutate(Concentration = Solved * Dilution)
-
-# create a scatterplot of tidy_data_solved_dil of the Concentration that colors by dilution
-
-ggplot(tidy_data_solved_dil2, aes(x = Sample, y = Concentration, color = as.character(Dilution))) +
-  geom_point() +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
-  labs(title = "Concentration of Albumin by Dilution",
-       x = "Cell",
-       y = "Concentration",
-       color = "Dilution")
-
-ggplot(tidy_data_solved_dil2, aes(x = Sample, y = Concentration, color = Dilution_calc)) +
-  geom_point() +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
-  labs(title = "Concentration of Albumin by Dilution",
-       x = "Cell",
-       y = "Concentration",
-       color = "Dilution")
-
-
-table <- tidy_data_solved_dil2 %>%
-  filter(Type == "Sample") %>%
-  group_by(Dilution, Dilution_calc) %>%
-  summarize(count = n())
-
-table
-
-
-```
-
-# 3. Read in Creatinine Values
+# 3. Read Creatinine (By Week)
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
+df_creatinine_week <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Creatinine_Week_070325.xlsx"))
 
-df_creatinine <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Creatinine061825.xlsx"))
-
-subset_pre <- df_creatinine[19:25, 2:10]
+subset_pre_week <- df_creatinine_week[9:16, 1:12]
 
 # rename the columns to 1-12
-colnames(subset_pre) <- c("Row", 1:8)
+colnames(subset_pre_week) <- c("Row", 1:11)
 
-subset_pre <- subset_pre %>%
+subset_pre_week <- subset_pre_week %>%
   mutate(across(-Row, as.numeric))
 
-tidy_df_pre <- subset_pre  %>%
+tidy_df_pre_week <- subset_pre_week  %>%
   pivot_longer(cols = -Row, # Pivot all columns except Row
                names_to = "Column", # Name of new column for the old column names
                values_to = "Value") %>% # Name of new column for the values
@@ -354,21 +346,21 @@ tidy_df_pre <- subset_pre  %>%
   select(-Row, -Column) %>%
   select(Cell, Value)
 
-as.character(colnames(subset_pre))
+as.character(colnames(subset_pre_week))
 
 #set the colnames as characters
 
-df_creatinine_post <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Creatinine_Acid052125.xlsx"))
+df_creatinine_post_week <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Creatinine_Acid_Week_070325.xlsx"))
 
-subset_post <- df_creatinine_post[9:15, 1:9]
+subset_post_week <- df_creatinine_post_week[9:16, 1:12]
 
 # rename the columns to 1-12
-colnames(subset_post) <- c("Row", 1:8)
+colnames(subset_post_week) <- c("Row", 1:11)
 
-subset_post <- subset_post %>%
+subset_post_week <- subset_post_week %>%
   mutate(across(-Row, as.numeric))
 
-tidy_df_post <- subset_post  %>%
+tidy_df_post_week <- subset_post_week  %>%
   pivot_longer(cols = -Row, # Pivot all columns except Row
                names_to = "Column", # Name of new column for the old column names
                values_to = "Value") %>% # Name of new column for the values
@@ -378,25 +370,24 @@ tidy_df_post <- subset_post  %>%
 
 # merge tidy_df_pre and tidy_df_post by Row
 
-tidy_df <- merge(tidy_df_pre, tidy_df_post, by = "Cell")
+tidy_df_week <- merge(tidy_df_pre_week, tidy_df_post_week, by = "Cell")
 
 
-tidy_df <- tidy_df %>%
+tidy_df_week <- tidy_df_week %>%
   mutate(Value = Value.x - Value.y) %>%
   select(Cell, Value)
 
 ```
 
 ## Load Sample Info and Merge the data
-
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
 # Load Sample Info
 
-df.Sample <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Creatinine_Sample_061825.xlsx"))
+df.Sample_week <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Creatinine_Sample_Week_070325.xlsx"))
 
-tidy_data <- tidy_df %>%
-  left_join(df.Sample, by = c("Cell" = "Cell")) 
+tidy_data_week <- tidy_df_week %>%
+  left_join(df.Sample_week, by = c("Cell" = "Cell")) 
 
 ```
 
@@ -408,11 +399,11 @@ tidy_data <- tidy_df %>%
 
 # filter if Sample is Ladder or Blank
 
-df.Ladder_Cre <- tidy_data %>%
+df.Ladder_Cre_week <- tidy_data_week %>%
   filter(Sample == "Ladder")
 
 
-ggplot(df.Ladder_Cre, aes(x = Ladder_Value, y = Value, color = Sample)) +
+ggplot(df.Ladder_Cre_week, aes(x = Ladder_Value, y = Value, color = Sample)) +
   geom_point() +
   theme_minimal() +
   labs(title = "Ladder",
@@ -422,10 +413,10 @@ ggplot(df.Ladder_Cre, aes(x = Ladder_Value, y = Value, color = Sample)) +
 
 # curve fit the data using a natural log
 
-x <- df.Ladder_Cre$Ladder_Value
-y <- df.Ladder_Cre$Value
+x <- df.Ladder_Cre_week$Ladder_Value
+y <- df.Ladder_Cre_week$Value
 
-fit <- lm(Value ~ Ladder_Value, data = df.Ladder_Cre)
+fit <- lm(Value ~ Ladder_Value, data = df.Ladder_Cre_week)
 
 # Print summary of the non-linear regression
 summary(fit)
@@ -435,11 +426,11 @@ m <- coefficients["Ladder_Value"]
 b <- coefficients["(Intercept)"]
 
 
-plot_data <- data.frame(x = x, y = y, Predicted = predict(fit, newdata = data.frame(Ladder_Value = x)))
+plot_data_week <- data.frame(x = x, y = y, Predicted = predict(fit, newdata = data.frame(Ladder_Value = x)))
 
 
 # Create the ggplot with scatter plot and fitted line
-p <- ggplot(plot_data, aes(x = x, y = y)) +
+p <- ggplot(plot_data_week, aes(x = x, y = y)) +
   geom_point() +  # Scatter plot of x vs y
   geom_line(aes(y = Predicted), color = "red") +  # Fitted line
   labs(
@@ -456,28 +447,27 @@ p
 ```
 
 ## b. Calcuate the values from the samples
-
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
 # Subtract Blank and calculate the values
 
-tidy_data_blank <- tidy_data %>%
-   mutate(Value = ifelse(Sample != "Blank", Value - filter(df.Ladder, Sample == "Blank")$Value, NA)) %>%
+tidy_data_blank_week <- tidy_data_week %>%
+   mutate(Value = ifelse(Sample != "Blank", Value - filter(df.Ladder_week, Sample == "Blank")$Value, NA)) %>%
    filter(!is.na(Value))
 
-tidy_data_blank <- tidy_data %>%
+tidy_data_blank_week <- tidy_data_week %>%
     mutate(Value = Value) %>%
     filter(!is.na(Value))
 
-tidy_data_solved <- tidy_data_blank  %>%
+tidy_data_solved_week <- tidy_data_blank_week  %>%
   mutate(Solved = ((Value - b) / m))
 
-df_test <- tidy_data_solved %>%
+df_test_week <- tidy_data_solved_week %>%
   filter(Sample == "Ladder")
 
 # Create a scatter plot of df_test
 
-ggplot(df_test, aes(x = Ladder_Value, y = Solved, color = as.character(Ladder_Value))) +
+ggplot(df_test_week, aes(x = Ladder_Value, y = Solved, color = as.character(Ladder_Value))) +
   geom_point() +
   theme_minimal() +
   labs(title = "Checking Equation Fit Against Ladder",
@@ -489,18 +479,18 @@ ggplot(df_test, aes(x = Ladder_Value, y = Solved, color = as.character(Ladder_Va
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
-df_sample_test <- tidy_data_solved %>%
+df_sample_test_week <- tidy_data_solved_week %>%
   filter(Sample != "Blank" | Sample != "Ladder"| Sample != "Max")
 
 # filter tidy_data_solved to not include Blank, Max, or Ladder in the Sample column
 
-df_sample_test
+df_sample_test_week
 
-p + geom_point(data = df_sample_test, aes(x = Solved, y = Value), color = as.character(df_sample_test$Dilution), size = 3)
+p + geom_point(data = df_sample_test_week, aes(x = Solved, y = Value), color = as.character(df_sample_test_week$Dilution), size = 3)
 
 # If Dilution is greater than 10 then write (Above), if the not write OK
 
-df_sample_test <- df_sample_test %>%
+df_sample_test_week <- df_sample_test_week %>%
   mutate(Dilution_calc = ifelse(Solved < 1, "Below", "OK"))
 
 ```
@@ -509,16 +499,16 @@ df_sample_test <- df_sample_test %>%
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=15, fig.height=5}
 
-tidy_data_solved <- tidy_data_solved %>%
+tidy_data_solved_week <- tidy_data_solved_week %>%
   mutate(Dilution_calc = ifelse(Solved < 1, "Below", "OK"))
 
-tidy_data_solved_dil3 <- tidy_data_solved  %>%
+tidy_data_solved_dil3_week <- tidy_data_solved_week  %>%
   mutate(Concentration = Solved * Dilution) %>%
   filter(!is.na(Concentration))
 
 # create a  scatterplot of tidy_data_solved_dil of the Concentration that colors by dilution
 
-ggplot(tidy_data_solved_dil3, aes(x = Sample, y = Concentration, color = as.character(Dilution))) +
+ggplot(tidy_data_solved_dil3_week, aes(x = Sample, y = Concentration, color = as.character(Dilution))) +
   geom_point() +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
@@ -527,7 +517,7 @@ ggplot(tidy_data_solved_dil3, aes(x = Sample, y = Concentration, color = as.char
        y = "Concentration",
        color = "Dilution")
 
-ggplot(tidy_data_solved_dil3, aes(x = Sample, y = Concentration, color = Dilution_calc)) +
+ggplot(tidy_data_solved_dil3_week, aes(x = Sample, y = Concentration, color = Dilution_calc)) +
   geom_point() +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
@@ -536,94 +526,77 @@ ggplot(tidy_data_solved_dil3, aes(x = Sample, y = Concentration, color = Dilutio
        y = "Concentration",
        color = "Dilution")
 
-table <- tidy_data_solved_dil3 %>%
+table_week <- tidy_data_solved_dil3_week %>%
   group_by(Dilution, Dilution_calc) %>%
   summarize(count = n())
 
-table
+table_week
 
-creatinine_table <- tidy_data_solved_dil3 %>%
+creatinine_table_week <- tidy_data_solved_dil3_week %>%
   filter(Dilution == "5") %>% 
   group_by(Sample) %>%
   summarize(Cre_Concentration = mean(Concentration))
 
-
-```
-
-
-```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=15, fig.height=5}
-#convert grams to dL for urine
-tidy_data_solved_dil_meta$Urine_dL <- tidy_data_solved_dil_meta$UV * 0.01
-  
-#creatinine mass
-tidy_data_solved_dil_meta$Creatinine_Mass <- tidy_data_solved_dil_meta$Urine_dL * tidy_data_solved_dil_meta$Concentration
-
-tidy_data_solved_dil_meta <- tidy_data_solved_dil_meta[!is.na(tidy_data_solved_dil_meta$Treatment), ]
-
-tidy_data_solved_dil_meta$Treatment <- factor(tidy_data_solved_dil_meta$Treatment,
-  levels = c("Vehicle", "1 mg", "10 mg")
-)
-
-#Dot plot for Creatinine Mass
-tidy_data_solved_dil_meta$`Timepoint Treatment` <- factor(tidy_data_solved_dil_meta$`Timepoint Treatment`,
-  levels = c("Baseline Vehicle", "Final Vehicle", "Baseline 1mg", "Final 1mg", "Baseline 10mg", "Final 10mg")
-)
-
-ggplot(tidy_data_solved_dil_meta, aes(x = `Timepoint Treatment`, y = Creatinine_Mass, color = Timepoint)) +
-  geom_point(size = 3) +
-  labs(title = "Creatinine Mass at Baseline and Endpoint by Treatment Group",
-       x = "Treatment Group",
-       y = "Creatinine Mass (g/dL)",
-       color = "Treatment")
-  
-
 ```
 
 
 
-# 4. Calculate ACR
-
+# 4. Calculate ACR (Week)
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE,  fig.width=10, fig.height=5}
 
-df.meta <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Long_PFAS_Metadata.xlsx"), colNames = F, rowNames = T)
+df.meta_week <- read.xlsx(here("VQC R work", "Albuwell Data Sheets", "Long_PFAS_Metadata_Week.xlsx"), colNames = F, rowNames = T)
 
-df.ACR <- merge(creatinine_table, albumin_table, by = "Sample")
+df.ACR_week <- merge(creatinine_table_week, albumin_table_week, by = "Sample")
 
-df.ACR <- df.ACR %>%
+df.ACR_week <- df.ACR_week %>%
   mutate(Alb_mg_dL = Alb_Concentration / 10) %>% 
   mutate(Cre_g_dL = Cre_Concentration / 1000) %>%
   mutate(ACR_mg_g = Alb_mg_dL / Cre_g_dL)
 
-df.ACR
+df.ACR_week
 
 ```
-
 
 ## a. Graph of ACR by group
 
 ```{r, echo=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 
-ACR_meta <- tidy_data_solved_dil_meta %>%
-  left_join(df.ACR, by = c("Sample" = "Sample"))
+ACR_meta_week <- tidy_data_solved_dil_meta2_week %>%
+  left_join(df.ACR_week, by = c("Sample" = "Sample"))
 
-levels(df.ACR$'Timepoint Treatment')
+levels(df.ACR_week$'Timepoint Treatment')
 
-levels(ACR_meta$'Timepoint Treatment')
+levels(ACR_meta_week$'Timepoint Treatment')
 
-ACR_meta$`Timepoint Treatment` <- as.factor(ACR_meta$`Timepoint Treatment`)
+ACR_meta_week$`Timepoint Treatment` <- as.factor(ACR_meta_week$`Timepoint Treatment`)
 
-ACR_meta$`Timepoint Treatment` <- factor(ACR_meta$`Timepoint Treatment`,
-  levels = c("Baseline Vehicle", "Final Vehicle", "Baseline 1mg", "Final 1mg", "Baseline 10mg", "Final 10mg")
+ACR_meta_week$`Timepoint Treatment` <- factor(ACR_meta_week$`Timepoint Treatment`,
+  levels = c("Week 0 1 mg", "Week 1 1 mg", "Week 2 1 mg", "Week 3 1 mg", "Week 4 1 mg", "Week 0 10 mg", "Week 1 10 mg", "Week 2 10 mg", "Week 3 10 mg")
 )
 
-ggplot(ACR_meta, aes(x = `Timepoint Treatment`, y = ACR_mg_g, color = as.character(Treatment))) +
+ggplot(ACR_meta_week, aes(x = `Timepoint Treatment`, y = ACR_mg_g, color = Treatment)) +
   geom_point(size = 3) +
-  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
   labs(title = "ACR by Treatment",
        x = "Timepoint Treatment",
        y = "ACR",
        color = "Treatment")
+  
+  
+  #Calculate 24 hour Albumin
+ACR_meta_week <- ACR_meta_week %>%
+  mutate(Alb_24 = Alb_Concentration * UV_dL)
+
+albumin_table_week <- albumin_table_week %>%
+  left_join(
+    ACR_meta_week %>% select(Alb_24),
+    by = "Sample"
+  )
+  
+albumin_table_week
+  
 ```
+
 
 
 # Session Info
